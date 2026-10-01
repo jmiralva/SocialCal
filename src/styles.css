@@ -25,11 +25,6 @@
   --linear: "CASL" 0, "MONO" 0, "CRSV" 0.5;
   --mono: "CASL" 0, "MONO" 1, "CRSV" 0.5;
   --topbar-h: 57px;
-  /* Old best-days tokens (--g4, --you, --soft, --radius): removed with their rules in Task 4. */
-  --soft: #e9ebe6;
-  --g4: #6fae3a;
-  --you: #e8590c;
-  --radius: 12px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -150,22 +145,24 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
 }
 
 .pane-best { padding: 0 16px 16px; }
-.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 14px 0 6px; }
-.pane-best > .eyebrow:first-child { margin-top: 2px; }
-.day-card { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 8px; }
-.day-card.is-top { border: 2px solid var(--g4); padding: 10px 12px; }
-.day-card.spaced { margin-top: 14px; }
-.cards-muted .day-card { opacity: 0.75; }
-.day-card-row { display: flex; justify-content: space-between; align-items: baseline; }
-.day-card-row b { font: 700 17px var(--font); }
-.day-card-row span { font-size: 13px; color: var(--muted); }
-.meter { height: 4px; background: var(--soft); border-radius: 2px; margin: 7px 0 8px; overflow: hidden; }
-.meter i { display: block; height: 100%; background: var(--g4); }
-.pills { display: flex; flex-wrap: wrap; gap: 5px; }
-.pill { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--soft); }
-.pill.is-me { background: var(--you); color: #fff; }
-.pill.is-no { background: transparent; color: var(--pencil); text-decoration: line-through; }
-.more { display: block; width: 100%; margin-top: 4px; border: 1px dashed var(--pencil); background: transparent; border-radius: 10px; padding: 10px; font-weight: 700; font-size: 13px; color: var(--text); cursor: pointer; }
+.best-title { font-size: 22px; }
+.best-sub { margin: 4px 0 6px; font-size: 14px; color: var(--muted); }
+.best-h3 { font-size: 16px; margin: 20px 0 0; }
+.pane-best .empty h2 { font-size: 20px; margin-bottom: 6px; }
+.day-rows { list-style: none; margin: 0; padding: 0; }
+.day-row { padding: 12px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 6px; }
+.day-row.is-spaced { margin-top: 10px; }
+.day-row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.day-row-date { position: relative; padding: 0 2px; font-size: 18px; font-weight: 700; font-variation-settings: var(--casual); color: var(--text); }
+.day-row.is-secondary .day-row-date { font-weight: 600; }
+.day-row-date .ring { left: -12px; top: -8px; width: calc(100% + 24px); height: calc(100% + 16px); }
+.day-row-date .ring path { stroke-width: 5; }
+.day-row-count { font-size: 13px; color: var(--muted); font-variation-settings: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.names { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 14px; color: var(--text); }
+.name.is-me { font-weight: 700; color: var(--on-hl); background: var(--hl); box-shadow: inset 0 -2px 0 var(--hl-edge); padding: 0 3px; border-radius: 2px; }
+.name.is-no s { color: var(--muted); }
+.more { display: block; width: 100%; margin-top: 14px; border: 1.5px dashed var(--ink-soft); background: transparent; border-radius: 6px; padding: 11px; font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .note { font-size: 13px; color: var(--muted); text-align: center; margin: 8px 0 0; }
 .empty { background: var(--sheet); border: 1.5px dashed var(--edge); border-radius: 10px; padding: 22px 18px; text-align: center; }
 .empty h3 { font-size: 20px; margin-bottom: 6px; }
@@ -250,8 +247,6 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
   .page[data-tab] .layout { flex: 1; min-height: 0; width: 100%; max-width: none; grid-template-columns: minmax(0, 1fr) calc(320px + var(--gutter)); align-items: stretch; }
   .page[data-tab] .main { overflow-y: auto; overscroll-behavior: contain; padding: 0 0 24px var(--gutter); }
   .pane-best { overflow-y: auto; overscroll-behavior: contain; padding: 16px calc(20px + var(--gutter)) 16px 20px; border-left: 1px solid var(--rule); background: var(--paper); }
-  .pane-best .day-card { background: var(--sheet); }
-  .pane-best .pill:not(.is-me):not(.is-no) { background: var(--sheet); }
   .tabbar { display: none; }
   .save-banner { bottom: 24px; }
   .overlay { align-items: center; }
@@ -267,4 +262,5 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
   .grid .day.is-mine .mark path { stroke: MarkText; }
   .grid .day.is-mine .mark .n { color: MarkText; }
   .ring path { stroke: CanvasText; }
+  .name.is-me { forced-color-adjust: none; background: Mark; color: MarkText; }
 }

@@ -115,6 +115,9 @@ export const copy = {
     seeOthers: (n: number) => `See ${n} other ${plural(n, 'day', 'days')}`,
     hideOthers: 'Hide other days',
     cardCount: (count: number, total: number) => `${count} of ${total}`,
+    subtitle: (count: number, total: number) => `${count} of ${total} people available`,
+    you: 'You',
+    notFree: ' (not free)', // visually hidden after a struck-through name
   },
 
   help: {

@@ -4,6 +4,8 @@ import type { BestResult } from '../lib/best';
 import { DayCard } from './DayCard';
 import { copy } from '../copy';
 
+const NO_DAYS: ReadonlySet<string> = new Set();
+
 export function BestDays({
   result,
   participants,
@@ -11,6 +13,7 @@ export function BestDays({
   isCreator,
   onShare,
   onEditDates,
+  newBestDays = NO_DAYS,
 }: {
   result: BestResult;
   participants: Participant[];
@@ -18,6 +21,7 @@ export function BestDays({
   isCreator: boolean;
   onShare: () => void;
   onEditDates: () => void;
+  newBestDays?: ReadonlySet<string>;
 }) {
   const [showOthers, setShowOthers] = useState(false);
   const [showClosest, setShowClosest] = useState(false);
@@ -25,7 +29,7 @@ export function BestDays({
   if (result.kind === 'not-enough-people') {
     return (
       <div class="empty">
-        <h3>{copy.best.aloneTitle}</h3>
+        <h2>{copy.best.aloneTitle}</h2>
         <p>{copy.best.aloneBody}</p>
         <button type="button" class="btn" onClick={onShare}>
           {copy.best.share}
@@ -38,7 +42,7 @@ export function BestDays({
     return (
       <>
         <div class="empty">
-          <h3>{copy.best.noMajorityTitle}</h3>
+          <h2>{copy.best.noMajorityTitle}</h2>
           <p>
             {copy.best.noMajorityMax(result.max, result.total)} {isCreator ? copy.best.noMajorityCreator : copy.best.noMajorityFriend}
           </p>
@@ -59,12 +63,12 @@ export function BestDays({
         </div>
         {showClosest && (
           <>
-            <p class="eyebrow">{copy.best.closest(result.closest.length)}</p>
-            <div class="cards-muted">
+            <h3 class="best-h3">{copy.best.closest(result.closest.length)}</h3>
+            <ol class="day-rows">
               {result.closest.map((s) => (
-                <DayCard key={s.date} score={s} participants={participants} total={result.total} meId={meId} />
+                <DayCard key={s.date} score={s} participants={participants} total={result.total} meId={meId} secondary />
               ))}
-            </div>
+            </ol>
           </>
         )}
       </>
@@ -74,25 +78,31 @@ export function BestDays({
   const { top, next, total } = result;
   return (
     <>
-      <p class="eyebrow">{copy.best.best(top.length)}</p>
-      {top.map((s) => (
-        <DayCard key={s.date} score={s} participants={participants} total={total} meId={meId} top />
-      ))}
+      <h2 class="best-title">{copy.best.best(top.length)}</h2>
+      <p class="best-sub">{copy.best.subtitle(top[0].count, total)}</p>
+      <ol class="day-rows">
+        {top.map((s) => (
+          <DayCard key={s.date} score={s} participants={participants} total={total} meId={meId} top circled draw={newBestDays.has(s.date)} />
+        ))}
+      </ol>
       {next.length === 0 ? (
         <p class="note">{copy.best.noOthers}</p>
       ) : showOthers ? (
         <>
-          <p class="eyebrow">{copy.best.next(next.length)}</p>
-          {next.map((s, i) => (
-            <DayCard
-              key={s.date}
-              score={s}
-              participants={participants}
-              total={total}
-              meId={meId}
-              spaced={i > 0 && s.count !== next[i - 1].count}
-            />
-          ))}
+          <h3 class="best-h3">{copy.best.next(next.length)}</h3>
+          <ol class="day-rows">
+            {next.map((s, i) => (
+              <DayCard
+                key={s.date}
+                score={s}
+                participants={participants}
+                total={total}
+                meId={meId}
+                secondary
+                spaced={i > 0 && s.count !== next[i - 1].count}
+              />
+            ))}
+          </ol>
           <button type="button" class="more" onClick={() => setShowOthers(false)}>
             {copy.best.hideOthers}
           </button>

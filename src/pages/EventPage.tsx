@@ -279,6 +279,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
             isCreator={isCreator}
             onShare={share}
             onEditDates={() => setSheet('edit')}
+            newBestDays={newBestDays}
           />
         </aside>
       </div>

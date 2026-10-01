@@ -29,18 +29,19 @@ describe('BestDays', () => {
     expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn');
   });
 
-  it('uses singular labels for one day each', () => {
+  it('uses singular labels and the shared subtitle for one day', () => {
     renderBest({ kind: 'ok', total: 4, top: [score('2026-11-07', ['j', 'm', 's'])], next: [score('2026-10-09', ['m', 's'])] });
-    expect(screen.getByText('Best day')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Best day' })).toBeTruthy();
+    expect(screen.getByText('3 of 4 people available')).toBeTruthy();
     expect(screen.getByText('Sat, Nov 7')).toBeTruthy();
     expect(screen.getByText('3 of 4')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'See 1 other day' }));
-    expect(screen.getByText('Next best day')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Next best day' })).toBeTruthy();
     expect(screen.getByText('Fri, Oct 9')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Hide other days' })).toBeTruthy();
   });
 
-  it('uses plural labels and highlights top cards', () => {
+  it('uses plural labels, circles every tied day, and marks you and who is not free', () => {
     const { container } = render(
       <BestDays
         result={{
@@ -54,14 +55,23 @@ describe('BestDays', () => {
         isCreator={false}
         onShare={() => {}}
         onEditDates={() => {}}
+        newBestDays={new Set(['2026-10-24'])}
       />,
     );
-    expect(screen.getByText('Best days')).toBeTruthy();
-    expect(container.querySelectorAll('.day-card.is-top')).toHaveLength(2);
+    expect(screen.getByRole('heading', { level: 2, name: 'Best days' })).toBeTruthy();
+    expect(screen.getByText('3 of 4 people available')).toBeTruthy();
+    const top = container.querySelectorAll('ol li.day-row.is-top');
+    expect(top).toHaveLength(2);
+    expect(top[0].querySelector('.ring')).toBeTruthy();
+    expect(top[0].querySelector('.ring.draw')).toBeNull();
+    expect(top[1].querySelector('.ring.draw')).toBeTruthy();
+    expect(top[0].querySelector('.name.is-me')!.textContent).toBe('You');
+    expect(top[1].querySelector('.name.is-no s')!.textContent).toBe('You');
+    expect(top[1].textContent).toContain('You (not free)');
+    expect(container.querySelector('.meter')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'See 2 other days' }));
-    expect(screen.getByText('Next best days')).toBeTruthy();
-    expect(container.querySelector('.pill.is-me')?.textContent).toBe('Jorge');
-    expect(container.querySelector('.pill.is-no')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Next best days' })).toBeTruthy();
+    expect(container.querySelectorAll('li.day-row.is-secondary .ring')).toHaveLength(0);
   });
 
   it('notes when no other day reaches half', () => {
@@ -83,7 +93,8 @@ describe('BestDays', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit date range' }));
     expect(onEditDates).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Show closest days anyway' }));
-    expect(screen.getByText('Closest day so far')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Closest day so far' })).toBeTruthy();
+    expect(document.querySelectorAll('li.day-row.is-secondary')).toHaveLength(1);
   });
 
   it('no-majority copy for friends offers sharing', () => {
