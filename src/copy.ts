@@ -70,7 +70,7 @@ export const copy = {
   },
 
   join: {
-    sub: 'Select your availability to find the best day to meet.',
+    sub: 'Enter your name and select your availability to find the best day to meet.',
     submit: 'Continue',
     look: 'Just browse',
   },
