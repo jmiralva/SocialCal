@@ -6,6 +6,7 @@ describe('trackInputModality', () => {
   let stop = () => {};
   afterEach(() => {
     stop();
+    stop = () => {};
     delete document.documentElement.dataset.input;
   });
 
@@ -22,5 +23,21 @@ describe('trackInputModality', () => {
     trackInputModality()();
     fireEvent.keyDown(document.body, { key: 'Tab' });
     expect(document.documentElement.dataset.input).toBeUndefined();
+  });
+
+  it('ignores modifier keys and shortcuts after a pointer press', () => {
+    stop = trackInputModality();
+    fireEvent.pointerDown(document.body);
+    fireEvent.keyDown(document.body, { key: 'Shift' });
+    expect(document.documentElement.dataset.input).toBe('pointer');
+    fireEvent.keyDown(document.body, { key: 'c', metaKey: true });
+    expect(document.documentElement.dataset.input).toBe('pointer');
+  });
+
+  it('counts Shift+Tab as keyboard', () => {
+    stop = trackInputModality();
+    fireEvent.pointerDown(document.body);
+    fireEvent.keyDown(document.body, { key: 'Tab', shiftKey: true });
+    expect(document.documentElement.dataset.input).toBe('keyboard');
   });
 });
