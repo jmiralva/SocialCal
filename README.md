@@ -1,31 +1,18 @@
 # socialcal
 
-Find a day that works for a group. Create a calendar, share the link, and everyone marks the days they're free.
+Find the best days to meet up with friends. Create a calendar, share the link, and see which dates work for the most people.
 
-## Develop
+Free, with no sign-up or accounts. Try it at [socialcal-arx.pages.dev](https://socialcal-arx.pages.dev/).
 
-```bash
-npm install
-npm run db:migrate:local
-npm run build && npm run dev:api   # API + built app on http://localhost:8788
-npm run dev                        # Vite with hot reload on http://localhost:5173 (proxies /api to 8788)
-```
+## How it works
 
-## Test
+1. Create a calendar and pick a date range.
+2. Share the link with your friends.
+3. Everyone marks the days they're free.
+4. See which days work for the most people.
 
-```bash
-npm test            # unit + API tests
-npm run test:e2e    # Playwright, mobile viewport
-npm run typecheck
-```
+Built with Preact on Cloudflare Pages, with Pages Functions and D1 for the API.
 
-## Deploy
+## License
 
-```bash
-npx wrangler login                 # once
-npm run db:migrate:remote
-npm run db:migrate:preview         # same migrations on the preview database
-npm run deploy
-```
-
-Preview deployments (every branch pushed to GitHub except `main`) use the separate `socialcal-preview` database, set in `wrangler.toml` under `[env.preview]`. Run every new migration against both databases.
+MIT
