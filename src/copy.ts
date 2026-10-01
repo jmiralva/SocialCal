@@ -16,8 +16,8 @@ export const copy = {
   helpLink: 'How it works',
 
   create: {
-    title: 'Find a day that works',
-    lede: 'Name the plan, pick the window, share the link.',
+    title: 'Create your calendar',
+    lede: 'Name the plan, pick the window, and share the link to find a day that works.',
     yourName: 'Your name',
     yourNamePlaceholder: "So friends know it's you",
     submit: 'Create calendar',
@@ -27,7 +27,7 @@ export const copy = {
 
   eventFields: {
     plan: "What's the plan?",
-    planPlaceholder: 'e.g. Fall camping trip',
+    planPlaceholder: 'e.g. Dinner at that new restaurant',
     description: 'Description',
     descriptionPlaceholder: 'Optional: where, how long, anything people should know',
     from: 'From',
@@ -36,7 +36,7 @@ export const copy = {
 
   ready: {
     title: 'Your calendar is ready',
-    sub: 'Share the link with friends so they can add their days.',
+    sub: 'Share the link with friends so they can add their availability.',
     shareLabel: 'Share link',
     editLabel: 'Private edit link',
     copy: 'Copy',
@@ -59,7 +59,7 @@ export const copy = {
     days: (n: number) => `${n} ${plural(n, 'day', 'days')}`,
     changeName: 'Change name',
     viewOnly: 'Viewing only',
-    addDays: 'Add my days',
+    addDays: 'Add my availability',
   },
 
   calendar: {
@@ -70,9 +70,9 @@ export const copy = {
   },
 
   join: {
-    sub: "What's your name? Then tap the days you're available.",
+    sub: 'Select your availability to find the best day to meet.',
     submit: 'Continue',
-    look: 'Just look',
+    look: 'Just browse',
   },
 
   rename: {
@@ -91,13 +91,13 @@ export const copy = {
 
   best: {
     aloneTitle: 'Nobody else yet',
-    aloneBody: 'Best days show up once friends add their availability.',
+    aloneBody: 'Best days show up once others add their availability.',
     share: 'Share the link',
     noMajorityTitle: 'No day works for half the group yet',
     noMajorityMax: (max: number, total: number) => `The most overlap so far is ${max} of ${total}.`,
-    noMajorityCreator: 'Nudge people to add more days, or widen the date range.',
-    noMajorityFriend: 'Nudge people to add more days.',
-    editDates: 'Edit dates',
+    noMajorityCreator: 'Nudge people to add more availability, or widen the date range.',
+    noMajorityFriend: 'Nudge people to add more availability.',
+    editDates: 'Edit date range',
     showClosest: 'Show closest days anyway',
     hideClosest: 'Hide closest days',
     closest: (n: number) => plural(n, 'Closest day so far', 'Closest days so far'),

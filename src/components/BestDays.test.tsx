@@ -80,7 +80,7 @@ describe('BestDays', () => {
     const result: BestResult = { kind: 'no-majority', max: 1, total: 4, closest: [score('2026-10-09', ['m'])] };
     const { onEditDates } = renderBest(result, true);
     expect(screen.getByText(/widen the date range/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit dates' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit date range' }));
     expect(onEditDates).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Show closest days anyway' }));
     expect(screen.getByText('Closest day so far')).toBeTruthy();
