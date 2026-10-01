@@ -38,6 +38,26 @@ beforeEach(() => {
 afterEach(() => history.replaceState(null, '', '/'));
 
 describe('EventPage', () => {
+  it('browses on Escape from the name sheet', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(payload);
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByRole('dialog', { name: 'Fall camping trip' });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByText('Viewing only')).toBeTruthy();
+  });
+
+  it('brings the name sheet back with its field focused after Escape from help', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(payload);
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByRole('dialog', { name: 'Fall camping trip' });
+    fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
+    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Your name')));
+  });
+
   it('asks a new visitor for their name and supports just looking', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
