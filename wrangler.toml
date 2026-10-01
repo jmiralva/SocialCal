@@ -5,6 +5,5 @@ compatibility_date = "2026-08-22"
 [[d1_databases]]
 binding = "DB"
 database_name = "socialcal"
-# Replaced with the real id in Task 13 (output of `wrangler d1 create socialcal`).
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "e1f1259a-3e37-4ec8-9cc5-7610814219f7"
 migrations_dir = "migrations"
