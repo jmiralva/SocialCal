@@ -51,6 +51,10 @@ test('creator and friend find the best days together', async ({ page, browser })
   const friendContext = await browser.newContext({ ...devices['Pixel 7'], baseURL: 'http://localhost:8788' });
   const friend = await friendContext.newPage();
   await friend.goto(eventPath);
+  await friend.getByRole('button', { name: 'How it works' }).click();
+  await expect(friend.getByRole('dialog', { name: 'How socialcal works' })).toBeVisible();
+  await friend.getByRole('button', { name: 'Got it' }).click();
+  await expect(friend.getByRole('dialog', { name: 'Fall camping trip' })).toBeVisible();
   await friend.getByLabel('Your name').fill('Maya');
   await friend.getByRole('button', { name: 'Continue' }).click();
   await expect(friend.getByText('Marking days for')).toBeVisible();
@@ -82,6 +86,10 @@ test('creator and friend find the best days together', async ({ page, browser })
   await expect(friend.locator('p.eyebrow').first()).toHaveText('Best days');
   await expect(friend.locator('.day-card.is-top')).toHaveCount(2);
   await expect(friend.getByRole('button', { name: 'See 1 other day' })).toBeVisible();
+  await friend.getByRole('button', { name: 'How socialcal works' }).click();
+  await expect(friend.getByRole('dialog', { name: 'How socialcal works' })).toBeVisible();
+  await friend.getByRole('button', { name: 'Got it' }).click();
+  await expect(friend.getByRole('dialog')).toHaveCount(0);
 
   await page.reload();
   await page.getByRole('tab', { name: 'Best days' }).click();

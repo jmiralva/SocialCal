@@ -54,8 +54,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 
 .calendar { padding: 0 16px; }
 .dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 10px; text-align: center; color: var(--muted); text-transform: uppercase; }
-.month .dow-row { padding-bottom: 4px; }
-.month h3 { font-size: 15px; margin: 10px 0 6px; }
+.month .dow-row { padding-bottom: 8px; }
+.month h3 { font-size: 15px; margin: 12px 0 10px; }
 .months { display: grid; grid-template-columns: 1fr; gap: 8px 28px; }
 .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; touch-action: pan-y; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
 .day { height: 44px; border-radius: 6px; background: var(--soft); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-weight: 700; font-size: 13px; cursor: pointer; }
