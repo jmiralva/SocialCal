@@ -10,16 +10,21 @@ export function useEvent(eventId: string, intervalMs = 20_000) {
   // This stops a GET that started before a save from overwriting the saved data.
   const seq = useRef(0);
 
-  const refresh = useCallback(async () => {
+  // Resolves with the payload it applied, or null if it was superseded or failed.
+  const refresh = useCallback(async (): Promise<EventPayload | null> => {
     const mine = ++seq.current;
     try {
       const data = await api.getEvent(eventId);
-      if (mine === seq.current) setState({ status: 'ready', data });
+      if (mine !== seq.current) return null;
+      setState({ status: 'ready', data });
+      return data;
     } catch (e) {
-      if (mine !== seq.current) return;
-      setState((prev) =>
-        prev.status === 'ready' ? prev : { status: 'error', notFound: e instanceof ApiRequestError && e.status === 404 },
-      );
+      if (mine === seq.current) {
+        setState((prev) =>
+          prev.status === 'ready' ? prev : { status: 'error', notFound: e instanceof ApiRequestError && e.status === 404 },
+        );
+      }
+      return null;
     }
   }, [eventId]);
 

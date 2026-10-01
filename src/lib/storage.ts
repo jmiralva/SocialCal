@@ -1,9 +1,7 @@
-export type Identity = { participantId?: string; token?: string; editKey?: string };
-
-const identityKey = (eventId: string) => `socialcal:${eventId}`;
 const createdKey = (eventId: string) => `socialcal:created:${eventId}`;
+const EDIT_KEY = /^[A-Za-z0-9]{22}$/;
 
-// In-memory fallback so identity and the just-created flag survive the session when browser storage throws.
+// In-memory fallback so the just-created edit key survives the session when browser storage throws.
 const memory = new Map<string, string>();
 
 function read(store: () => Storage, key: string): string | null {
@@ -32,29 +30,16 @@ function remove(store: () => Storage, key: string): void {
   memory.delete(key);
 }
 
-export function loadIdentity(eventId: string): Identity {
-  const raw = read(() => localStorage, identityKey(eventId));
-  if (!raw) return {};
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Identity) : {};
-  } catch {
-    return {};
-  }
+// The edit key is shown once, in the ready sheet after creating. Identity itself lives in the server-set cookie.
+export function markJustCreated(eventId: string, editKey: string): void {
+  write(() => sessionStorage, createdKey(eventId), editKey);
 }
 
-export function saveIdentity(eventId: string, patch: Identity): Identity {
-  const next = { ...loadIdentity(eventId), ...patch };
-  write(() => localStorage, identityKey(eventId), JSON.stringify(next));
-  return next;
+export function peekJustCreated(eventId: string): string | null {
+  const value = read(() => sessionStorage, createdKey(eventId));
+  return value && EDIT_KEY.test(value) ? value : null;
 }
 
-export function markJustCreated(eventId: string): void {
-  write(() => sessionStorage, createdKey(eventId), '1');
-}
-
-export function consumeJustCreated(eventId: string): boolean {
-  const hit = read(() => sessionStorage, createdKey(eventId)) === '1';
+export function clearJustCreated(eventId: string): void {
   remove(() => sessionStorage, createdKey(eventId));
-  return hit;
 }

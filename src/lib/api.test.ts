@@ -7,17 +7,26 @@ const respond = (status: number, body: unknown) =>
 afterEach(() => vi.unstubAllGlobals());
 
 describe('api', () => {
-  it('sends JSON with auth headers', async () => {
+  it('sends JSON without identity headers', async () => {
     const fetchMock = respond(200, { id: 'p', name: 'Maya', dates: ['2026-10-09'] });
     vi.stubGlobal('fetch', fetchMock);
-    const result = await api.updatePerson('E', 'P', 'TOKEN', { dates: ['2026-10-09'] });
+    const result = await api.updatePerson('E', 'P', { dates: ['2026-10-09'] });
     expect(result.name).toBe('Maya');
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/events/E/people/P');
     expect(init.method).toBe('PATCH');
-    expect(init.headers['X-Participant-Token']).toBe('TOKEN');
-    expect(init.headers['Content-Type']).toBe('application/json');
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
     expect(JSON.parse(init.body)).toEqual({ dates: ['2026-10-09'] });
+  });
+
+  it('sends the edit key in the claim body', async () => {
+    const fetchMock = respond(200, { participantId: 'J' });
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await api.claimCreator('E', 'KEY')).toEqual({ participantId: 'J' });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('/api/events/E/claim-creator');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(init.body)).toEqual({ editKey: 'KEY' });
   });
 
   it('maps API errors', async () => {

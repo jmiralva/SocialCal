@@ -5,7 +5,7 @@ import { api, ApiRequestError } from '../lib/api';
 import { computeBest, countByDay } from '../lib/best';
 import { createSaver, type SaverStatus } from '../lib/saver';
 import { editUrl, eventUrl, readEditKeyFromHash, shareOrCopy } from '../lib/share';
-import { consumeJustCreated, loadIdentity, saveIdentity, type Identity } from '../lib/storage';
+import { clearJustCreated, peekJustCreated } from '../lib/storage';
 import { monthGrids, rangeDays, todayLocalISO } from '../../shared/dates';
 import type { EventPatch, Participant } from '../../shared/types';
 import { TopBar } from '../components/TopBar';
@@ -22,30 +22,38 @@ import { weekStartForLocale } from '../lib/weekStart';
 
 const CANT_EDIT = "This browser can't edit this event. Use your private edit link.";
 const OFFLINE = "Couldn't save. Check your connection and try again.";
+const COOKIES_BLOCKED = "Cookies are blocked, so this browser can't remember you.";
 
-// An edit key to claim: from the edit link's hash, or one saved earlier whose claim never completed (e.g. a network failure).
-const pendingEditKey = (eventId: string): string | null => {
-  const fromHash = readEditKeyFromHash(location.hash);
-  if (fromHash) return fromHash;
-  const saved = loadIdentity(eventId);
-  return saved.editKey && !(saved.participantId && saved.token) ? saved.editKey : null;
-};
-
-const errorMessage = (e: unknown) =>
-  e instanceof ApiRequestError && e.status >= 400 && e.status < 500 ? e.message : OFFLINE;
+const isClientError = (e: unknown): e is ApiRequestError => e instanceof ApiRequestError && e.status >= 400 && e.status < 500;
+const isAuthError = (e: unknown) => e instanceof ApiRequestError && (e.status === 401 || e.status === 403);
+const errorMessage = (e: unknown) => (isClientError(e) ? e.message : OFFLINE);
 
 const WEEK_START = weekStartForLocale();
 
 export function EventPage({ eventId, navigate }: { eventId: string; navigate: Navigate }) {
   const { state, refresh, retry, setData } = useEvent(eventId);
-  const [identity, setIdentity] = useState<Identity>(() => loadIdentity(eventId));
+  // Set only on the page right after creating; holds the edit key for the ready sheet until it closes.
+  const [justCreatedKey] = useState(() => peekJustCreated(eventId));
   const [viewOnly, setViewOnly] = useState(false);
-  const [sheet, setSheet] = useState<null | 'ready' | 'rename' | 'edit'>(() => (consumeJustCreated(eventId) ? 'ready' : null));
+  const [sheet, setSheet] = useState<null | 'ready' | 'rename' | 'edit'>(() => (justCreatedKey ? 'ready' : null));
   const [tab, setTab] = useState<'all' | 'best'>('all');
   const [localDates, setLocalDates] = useState<string[] | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaverStatus>('idle');
   const [toast, setToast] = useState<string | null>(null);
-  const [claiming, setClaiming] = useState(() => pendingEditKey(eventId) !== null);
+  // Stays true after a network failure, so the reload the toast asks for retries the claim.
+  const [claiming, setClaiming] = useState(() => readEditKeyFromHash(location.hash) !== null);
+  const [cookiesBlocked, setCookiesBlocked] = useState(false);
+
+  const meId = state.status === 'ready' ? state.data.me?.participantId : undefined;
+
+  // After the server links this browser (create, join, claim), the next GET should know it. If not, cookies are blocked.
+  const confirmLinked = async () => {
+    const data = await refresh();
+    if (data && !data.me) {
+      setCookiesBlocked(true);
+      setToast(COOKIES_BLOCKED);
+    }
+  };
 
   useEffect(() => {
     const meta = document.createElement('meta');
@@ -56,26 +64,39 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
   }, []);
 
   useEffect(() => {
-    const key = pendingEditKey(eventId);
+    if (justCreatedKey) void confirmLinked();
+  }, []);
+
+  useEffect(() => {
+    const key = readEditKeyFromHash(location.hash);
     if (!key) return;
-    if (location.hash) history.replaceState(null, '', location.pathname);
     api
       .claimCreator(eventId, key)
-      .then((r) => setIdentity(saveIdentity(eventId, { editKey: key, participantId: r.participantId, token: r.token })))
+      .then((r) => {
+        history.replaceState(null, '', location.pathname);
+        // Set `me` before clearing `claiming`, so the name sheet never shows in between.
+        setData((d) => ({ ...d, me: { participantId: r.participantId, isCreator: true } }));
+        setClaiming(false);
+        void confirmLinked();
+      })
       .catch((e) => {
-        if (e instanceof ApiRequestError && e.status >= 400 && e.status < 500) {
+        if (isClientError(e)) {
+          history.replaceState(null, '', location.pathname);
+          setClaiming(false);
           setToast("That edit link didn't work for this calendar.");
         } else {
-          // Network/5xx: the key was never checked. Keep it in identity storage so it isn't lost with the URL hash.
-          setIdentity(saveIdentity(eventId, { editKey: key }));
+          // Network/5xx: the key was never checked. Leave it in the URL so a reload retries.
           setToast("Couldn't check your edit link. Reload this page to try again.");
         }
-      })
-      .finally(() => setClaiming(false));
+      });
   }, [eventId]);
+
+  // Unsaved dates belong to the previous identity.
+  useEffect(() => setLocalDates(null), [meId]);
 
   const replaceParticipant = (p: Participant) =>
     setData((d) => ({
+      ...d,
       event: d.event.creatorParticipantId === p.id ? { ...d.event, creatorName: p.name } : d.event,
       participants: d.participants.map((x) => (x.id === p.id ? p : x)),
     }));
@@ -84,17 +105,14 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
     () =>
       createSaver({
         save: async (dates) => {
-          if (!identity.participantId || !identity.token) return;
+          if (!meId) return;
           try {
-            replaceParticipant(await api.updatePerson(eventId, identity.participantId, identity.token, { dates }));
+            replaceParticipant(await api.updatePerson(eventId, meId, { dates }));
           } catch (e) {
             // 4xx will never succeed on retry: tell the user and stop. Network/5xx errors rethrow so the saver retries.
-            if (e instanceof ApiRequestError && e.status >= 400 && e.status < 500) {
-              setToast(
-                e.status === 401 || e.status === 403
-                  ? "This browser can't change these days anymore."
-                  : `Couldn't save your days: ${e.message}`,
-              );
+            if (isClientError(e)) {
+              setToast(isAuthError(e) ? "This browser can't change these days anymore." : `Couldn't save your days: ${e.message}`);
+              if (isAuthError(e)) void refresh();
               return;
             }
             throw e;
@@ -105,7 +123,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
           if (s === 'idle') setLocalDates(null);
         },
       }),
-    [eventId, identity.participantId, identity.token],
+    [eventId, meId],
   );
   useEffect(() => {
     const flushIfHidden = () => {
@@ -136,13 +154,15 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
     );
   }
 
-  const { event } = state.data;
+  const { event, me } = state.data;
   const today = todayLocalISO();
-  const me = state.data.participants.find((p) => p.id === identity.participantId);
-  const participants = state.data.participants.map((p) => (me && p.id === me.id && localDates ? { ...p, dates: localDates } : p));
-  const myDates = new Set(participants.find((p) => p.id === me?.id)?.dates ?? []);
+  const myParticipant = state.data.participants.find((p) => p.id === me?.participantId);
+  const participants = state.data.participants.map((p) =>
+    myParticipant && p.id === myParticipant.id && localDates ? { ...p, dates: localDates } : p,
+  );
+  const myDates = new Set(participants.find((p) => p.id === myParticipant?.id)?.dates ?? []);
   const myCount = [...myDates].filter((d) => d >= event.startDate && d <= event.endDate).length;
-  const isCreator = Boolean(identity.editKey);
+  const isCreator = me?.isCreator ?? false;
   const shareUrl = eventUrl(event.id);
   const selectableDays = rangeDays(event.startDate, event.endDate).filter((d) => d >= today);
 
@@ -161,38 +181,55 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
   const join = async (name: string) => {
     try {
       const r = await api.join(eventId, name);
-      setIdentity(saveIdentity(eventId, { participantId: r.participantId, token: r.token }));
-      setData((d) => ({ ...d, participants: [...d.participants, { id: r.participantId, name, dates: [] }] }));
+      setData((d) => ({
+        ...d,
+        me: { participantId: r.participantId, isCreator: false },
+        participants: [...d.participants, { id: r.participantId, name, dates: [] }],
+      }));
       setViewOnly(false);
-      void refresh();
+      void confirmLinked();
       return null;
     } catch (e) {
+      // Another tab joined first: the refreshed `me` hides the sheet.
+      if (e instanceof ApiRequestError && e.code === 'already_joined') {
+        void refresh();
+        return null;
+      }
       return errorMessage(e);
     }
   };
 
   const rename = async (name: string) => {
-    if (!me || !identity.token) return null;
+    if (!myParticipant) return null;
     try {
-      replaceParticipant(await api.updatePerson(eventId, me.id, identity.token, { name }));
+      replaceParticipant(await api.updatePerson(eventId, myParticipant.id, { name }));
       setSheet(null);
       return null;
     } catch (e) {
+      if (isAuthError(e)) void refresh();
       return errorMessage(e);
     }
   };
 
   const saveEvent = async (patch: EventPatch) => {
-    if (!identity.editKey) return CANT_EDIT;
+    if (!isCreator) return CANT_EDIT;
     try {
-      const r = await api.updateEvent(eventId, identity.editKey, patch);
+      const r = await api.updateEvent(eventId, patch);
       setData((d) => ({ ...d, event: r.event }));
       setSheet(null);
       return null;
     } catch (e) {
-      if (e instanceof ApiRequestError && (e.status === 401 || e.status === 403)) return CANT_EDIT;
+      if (isAuthError(e)) {
+        void refresh();
+        return CANT_EDIT;
+      }
       return errorMessage(e);
     }
+  };
+
+  const closeReady = () => {
+    clearJustCreated(eventId);
+    setSheet(null);
   };
 
   return (
@@ -202,7 +239,12 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
         <main class="main">
           <EventHeader event={event} isCreator={isCreator} onEdit={() => setSheet('edit')} />
           <section class="pane-all">
-            <MarkingBar name={me?.name} count={myCount} onChangeName={() => setSheet('rename')} onAddDays={() => setViewOnly(false)} />
+            <MarkingBar
+              name={myParticipant?.name}
+              count={myCount}
+              onChangeName={() => setSheet('rename')}
+              onAddDays={() => setViewOnly(false)}
+            />
             <Calendar
               months={monthGrids(event.startDate, event.endDate, WEEK_START)}
               weekStart={WEEK_START}
@@ -210,7 +252,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
               total={participants.length}
               mine={myDates}
               selectableDays={selectableDays}
-              editable={Boolean(me)}
+              editable={Boolean(myParticipant) && !claiming}
               onChange={changeDates}
             />
           </section>
@@ -219,7 +261,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
           <BestDays
             result={computeBest(participants, event.startDate, event.endDate, today)}
             participants={participants}
-            meId={me?.id}
+            meId={myParticipant?.id}
             isCreator={isCreator}
             onShare={share}
             onEditDates={() => setSheet('edit')}
@@ -238,7 +280,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
 
       {saveStatus === 'retrying' && <div class="save-banner">Couldn't save, retrying…</div>}
 
-      {!me && !viewOnly && !claiming && sheet === null && (
+      {!myParticipant && !viewOnly && !claiming && !cookiesBlocked && sheet === null && (
         <NameSheet
           title={event.name}
           subtitle="What's your name? Then tap the days you're available."
@@ -247,15 +289,15 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
           secondary={{ label: 'Just look', onClick: () => setViewOnly(true) }}
         />
       )}
-      {sheet === 'ready' && identity.editKey && (
-        <ReadySheet shareUrl={shareUrl} editUrl={editUrl(event.id, identity.editKey)} onClose={() => setSheet(null)} />
+      {sheet === 'ready' && justCreatedKey && (
+        <ReadySheet shareUrl={shareUrl} editUrl={editUrl(event.id, justCreatedKey)} onClose={closeReady} />
       )}
-      {sheet === 'rename' && me && (
+      {sheet === 'rename' && myParticipant && (
         <NameSheet
           title="Change your name"
           subtitle="This is how you show up to everyone."
           submitLabel="Save"
-          initialName={me.name}
+          initialName={myParticipant.name}
           onSubmit={rename}
           secondary={{ label: 'Cancel', onClick: () => setSheet(null) }}
         />

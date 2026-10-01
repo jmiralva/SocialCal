@@ -3,7 +3,7 @@ import type { Navigate } from '../App';
 import { TopBar } from '../components/TopBar';
 import { EventFields } from '../components/EventFields';
 import { api, ApiRequestError } from '../lib/api';
-import { markJustCreated, saveIdentity } from '../lib/storage';
+import { markJustCreated } from '../lib/storage';
 import { addDays, todayLocalISO } from '../../shared/dates';
 import { LIMITS, validateEventFields, validatePersonName, type FieldErrors } from '../../shared/validate';
 import type { EventPatch } from '../../shared/types';
@@ -39,8 +39,7 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
     setFormError(null);
     try {
       const r = await api.createEvent(input);
-      saveIdentity(r.eventId, { participantId: r.participantId, token: r.token, editKey: r.editKey });
-      markJustCreated(r.eventId);
+      markJustCreated(r.eventId, r.editKey);
       navigate(`/e/${r.eventId}`);
     } catch (err) {
       setFormError(

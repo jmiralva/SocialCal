@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { CreatePage } from './CreatePage';
 import { api } from '../lib/api';
-import { loadIdentity } from '../lib/storage';
+import { peekJustCreated } from '../lib/storage';
 
 vi.mock(import('../lib/api'), async (importOriginal) => {
   const mod = await importOriginal();
@@ -20,13 +20,8 @@ describe('CreatePage', () => {
     expect(api.createEvent).not.toHaveBeenCalled();
   });
 
-  it('creates the event, stores identity, and navigates', async () => {
-    vi.mocked(api.createEvent).mockResolvedValue({
-      eventId: 'E'.repeat(22),
-      editKey: 'K'.repeat(22),
-      participantId: 'P'.repeat(22),
-      token: 'T'.repeat(22),
-    });
+  it('creates the event, keeps the edit key for the ready sheet, and navigates', async () => {
+    vi.mocked(api.createEvent).mockResolvedValue({ eventId: 'E'.repeat(22), editKey: 'K'.repeat(22) });
     const navigate = vi.fn();
     render(<CreatePage navigate={navigate} />);
     type("What's the plan?", '  Fall camping trip ');
@@ -43,6 +38,6 @@ describe('CreatePage', () => {
       endDate: '2030-11-14',
       creatorName: 'Jorge',
     });
-    expect(loadIdentity('E'.repeat(22))).toEqual({ participantId: 'P'.repeat(22), token: 'T'.repeat(22), editKey: 'K'.repeat(22) });
+    expect(peekJustCreated('E'.repeat(22))).toBe('K'.repeat(22));
   });
 });
