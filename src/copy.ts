@@ -63,10 +63,12 @@ export const copy = {
   },
 
   calendar: {
-    weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-    count: (n: number, total: number) => `${n}/${total}`,
+    weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
     legendMine: 'Your days',
-    legendOthers: 'Others available',
+    legendTally: 'One mark per person free',
+    legendNumber: 'People free that day',
+    legendSelectable: 'Tap to mark',
+    legendOut: 'Outside the dates',
     // Screen reader label for a day button. `date` comes from formatDayLong.
     dayLabel: (date: string, count: number, total: number) =>
       count && total ? `${date}, ${count} of ${total} ${plural(total, 'person', 'people')} free` : `${date}, nobody free yet`,

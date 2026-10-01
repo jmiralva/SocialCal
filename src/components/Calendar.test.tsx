@@ -10,6 +10,8 @@ function Harness({
   weekStart,
   range = ['2026-10-07', '2026-10-20'],
   selectable = rangeDays('2026-10-09', range[1]), // days before Oct 9 are "past"
+  total = 3,
+  counts = new Map([['2026-10-09', 2]]),
   onChange = () => {},
 }: {
   initial?: string[];
@@ -17,6 +19,8 @@ function Harness({
   weekStart?: number;
   range?: [string, string];
   selectable?: string[];
+  total?: number;
+  counts?: Map<string, number>;
   onChange?: (d: string[]) => void;
 }) {
   const [mine, setMine] = useState(new Set(initial));
@@ -24,8 +28,8 @@ function Harness({
     <Calendar
       months={monthGrids(range[0], range[1], weekStart)}
       weekStart={weekStart}
-      counts={new Map([['2026-10-09', 2]])}
-      total={3}
+      counts={counts}
+      total={total}
       mine={mine}
       selectableDays={selectable}
       editable={editable}
@@ -43,17 +47,84 @@ const press = (key: string) => fireEvent.keyDown(document.activeElement!, { key 
 const cell = (c: Element, iso: string) => c.querySelector(`[data-date="${iso}"]`) as HTMLElement;
 
 describe('Calendar', () => {
-  it('renders counts, levels, and range states', () => {
+  it('renders tallies, range states, and the month structure', () => {
     const { container } = render(<Harness />);
     const d9 = cell(container, '2026-10-09');
-    expect(d9.textContent).toContain('2/3');
-    expect(d9.className).toContain('lvl-3');
+    expect(d9.className).toContain('is-open');
+    expect(d9.querySelector('.mark svg path')).toBeTruthy();
+    expect(d9.querySelector('.mark .n')).toBeNull();
+    expect(cell(container, '2026-10-10').querySelector('.mark')!.children).toHaveLength(0);
     expect(cell(container, '2026-10-07').className).toContain('is-past');
     expect(container.querySelectorAll('.day.is-out').length).toBe(31 - 14);
     expect(container.textContent).toContain('October 2026');
-    // Each month: heading, then weekday row, then grid
     const month = container.querySelector('.month')!;
-    expect([...month.children].map((el) => el.tagName === 'H3' ? 'h3' : el.className)).toEqual(['h3', 'dow-row', 'grid']);
+    expect([...month.children].map((el) => (el.tagName === 'H3' ? 'h3' : el.className))).toEqual(['h3', 'dow-row', 'grid']);
+  });
+
+  it('shows numbers and shading for groups of 10 or more', () => {
+    const { container, rerender } = render(<Harness total={9} counts={new Map([['2026-10-09', 5]])} />);
+    expect(cell(container, '2026-10-09').querySelector('.mark svg')).toBeTruthy();
+    expect(container.querySelector('.day.is-shaded')).toBeNull();
+    expect(container.textContent).toContain('One mark per person free');
+    rerender(<Harness total={10} counts={new Map([['2026-10-09', 5]])} />);
+    const d9 = cell(container, '2026-10-09');
+    expect(d9.querySelector('.mark .n')!.textContent).toBe('5');
+    expect(d9.className).toContain('is-shaded');
+    expect(d9.style.getPropertyValue('--share')).toBe('0.500');
+    expect(container.querySelectorAll('.mark svg')).toHaveLength(0);
+    expect(container.textContent).toContain('People free that day');
+  });
+
+  it('highlights only your days, and never past days', () => {
+    const { container } = render(<Harness initial={['2026-10-10']} />);
+    expect(cell(container, '2026-10-10').className).toContain('is-mine');
+    expect(cell(container, '2026-10-11').className).not.toContain('is-mine');
+    expect(cell(container, '2026-10-07').querySelector('.hl')).toBeTruthy(); // present but hidden by CSS on .is-past
+  });
+
+  it('drops "Tap to mark" from the legend in browse mode', () => {
+    const { container, unmount } = render(<Harness />);
+    expect(container.textContent).toContain('Tap to mark');
+    unmount();
+    const ro = render(<Harness editable={false} />);
+    expect(ro.container.textContent).not.toContain('Tap to mark');
+    expect(ro.container.textContent).toContain('Outside the dates');
+  });
+
+  it('plays the swipe on days you add, for 400ms each, including by keyboard', () => {
+    vi.useFakeTimers();
+    // act() flushes Preact's re-render after a timer changes state.
+    const wait = (ms: number) => act(() => {
+      vi.advanceTimersByTime(ms);
+    });
+    try {
+      const { container } = render(<Harness />);
+      fireEvent.pointerDown(cell(container, '2026-10-09'), { pointerType: 'mouse' });
+      expect(cell(container, '2026-10-09').className).toContain('is-swiping');
+      wait(300);
+      fireEvent.pointerMove(cell(container, '2026-10-10'), { pointerType: 'mouse' });
+      fireEvent.pointerUp(window);
+      wait(150);
+      expect(cell(container, '2026-10-09').className).not.toContain('is-swiping');
+      expect(cell(container, '2026-10-10').className).toContain('is-swiping');
+      wait(300);
+      expect(cell(container, '2026-10-10').className).not.toContain('is-swiping');
+      fireEvent.click(cell(container, '2026-10-12'), { detail: 0 });
+      expect(cell(container, '2026-10-12').className).toContain('is-swiping');
+      fireEvent.click(cell(container, '2026-10-12'), { detail: 0 }); // unmark: no new swipe
+      wait(400);
+      expect(container.querySelector('.is-swiping')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not swipe when your days change from outside (a poll or the saver)', () => {
+    const props = { months: monthGrids('2026-10-07', '2026-10-20'), counts: new Map<string, number>(), total: 3, selectableDays: rangeDays('2026-10-09', '2026-10-20'), editable: true, onChange: () => {} };
+    const { container, rerender } = render(<Calendar {...props} mine={new Set()} />);
+    rerender(<Calendar {...props} mine={new Set(['2026-10-10'])} />);
+    expect(cell(container, '2026-10-10').className).toContain('is-mine');
+    expect(container.querySelector('.is-swiping')).toBeNull();
   });
 
   it('renders in-range days as labelled buttons', () => {
@@ -151,7 +222,7 @@ describe('Calendar', () => {
 
   it('starts the week on the given day', () => {
     const { container } = render(<Harness weekStart={1} />);
-    expect(container.querySelector('.dow-row')!.textContent).toBe('MTWTFSS');
+    expect(container.querySelector('.dow-row')!.textContent).toBe('MoTuWeThFrSaSu');
     const grid = container.querySelector('.grid')!;
     expect(grid.children[3].textContent).toBe('1'); // Oct 1 2026 is a Thursday
   });

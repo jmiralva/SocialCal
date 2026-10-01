@@ -143,7 +143,7 @@ test('a keyboard-only visitor joins, marks a day, and uses help', async ({ brows
   const saved = savedDates(page, 1);
   await page.keyboard.press('Enter');
   await expect(day(page, iso(2))).toHaveAttribute('aria-pressed', 'true');
-  await expect(day(page, iso(2))).toContainText('1/2');
+  await expect(day(page, iso(2))).toHaveAttribute('aria-label', /1 of 2 people free/);
   await saved;
 
   // Help opens from the keyboard, closes on Escape, and gives focus back

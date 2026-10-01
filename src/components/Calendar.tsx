@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { addDays, formatDayLong, type MonthGrid } from '../../shared/dates';
 import { applySpan } from '../lib/selection';
+import { isNumberMode, tally } from '../lib/marks';
 import { copy } from '../copy';
 
 type CalendarProps = {
@@ -89,17 +90,45 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
     }
     const date = dateOf(e.currentTarget as Element);
     if (!editable || !date || !selectable.has(date)) return;
-    onChange(applySpan(mine, selectableDays, date, date, !mine.has(date)));
+    emit(applySpan(mine, selectableDays, date, date, !mine.has(date)));
   };
   const latest = useRef({ mine, selectable, selectableDays, onChange });
   latest.current = { mine, selectable, selectableDays, onChange };
+
+  const SWIPE_MS = 400;
+  // Days the person just added themselves (tap, drag, keyboard). Each keeps its own timer so late drag days finish their swipe.
+  const [swiping, setSwiping] = useState<ReadonlySet<string>>(new Set());
+  const swipeTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  useEffect(() => () => swipeTimers.current.forEach(clearTimeout), []);
+  const emit = (next: Set<string>) => {
+    const { mine: current, onChange: send } = latest.current;
+    const added = [...next].filter((d) => !current.has(d));
+    if (added.length) {
+      setSwiping((s) => new Set([...s, ...added]));
+      for (const d of added) {
+        clearTimeout(swipeTimers.current.get(d));
+        swipeTimers.current.set(
+          d,
+          setTimeout(() => {
+            swipeTimers.current.delete(d);
+            setSwiping((s) => {
+              const rest = new Set(s);
+              rest.delete(d);
+              return rest;
+            });
+          }, SWIPE_MS),
+        );
+      }
+    }
+    send(next);
+  };
   const drag = useRef<{ from: string; to: string; add: boolean; snap: Set<string> } | null>(null);
   const press = useRef<{ x: number; y: number; date: string; timer: ReturnType<typeof setTimeout> } | null>(null);
   // After a press toggles, its own click (detail >= 1, sometimes a task later on touch) must not toggle back.
   const ignoreClickUntil = useRef(0);
 
   const begin = (date: string) => {
-    const { mine: current, selectableDays: days, onChange: emit } = latest.current;
+    const { mine: current, selectableDays: days } = latest.current;
     const state = { from: date, to: date, add: !current.has(date), snap: new Set(current) };
     drag.current = state;
     emit(applySpan(state.snap, days, date, date, state.add));
@@ -176,9 +205,11 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
     const date = dateOf(under);
     if (date && latest.current.selectable.has(date)) {
       state.to = date;
-      latest.current.onChange(applySpan(state.snap, latest.current.selectableDays, state.from, date, state.add));
+      emit(applySpan(state.snap, latest.current.selectableDays, state.from, date, state.add));
     }
   };
+
+  const numbers = isNumberMode(total);
 
   return (
     <div
@@ -202,20 +233,24 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
                 if (!c.inRange) {
                   return (
                     <div key={c.iso} class="day is-out" aria-hidden="true">
-                      <span>{c.day}</span>
-                      <small />
+                      <span class="num">{c.day}</span>
+                      <span class="mark" />
                     </div>
                   );
                 }
                 const n = counts.get(c.iso) ?? 0;
-                const lvl = n && total ? Math.max(1, Math.round((n / total) * 5)) : 0;
                 const past = !selectable.has(c.iso);
-                const cls = ['day', `lvl-${lvl}`, mine.has(c.iso) && 'is-mine', past && 'is-past'].filter(Boolean).join(' ');
+                const shaded = numbers && n > 0 && !past;
+                const t = numbers ? null : tally(n, c.iso);
+                const cls = ['day', past ? 'is-past' : 'is-open', mine.has(c.iso) && 'is-mine', shaded && 'is-shaded', swiping.has(c.iso) && 'is-swiping']
+                  .filter(Boolean)
+                  .join(' ');
                 return (
                   <button
                     type="button"
                     key={c.iso}
                     class={cls}
+                    style={shaded ? `--share: ${(n / total).toFixed(3)}` : undefined}
                     data-date={c.iso}
                     tabIndex={c.iso === tabStop ? 0 : -1}
                     aria-label={copy.calendar.dayLabel(formatDayLong(c.iso), n, total)}
@@ -224,8 +259,17 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
                     onFocus={() => setFocusDate(c.iso)}
                     onClick={onDayClick}
                   >
-                    <span aria-hidden="true">{c.day}</span>
-                    <small aria-hidden="true">{n ? copy.calendar.count(n, total) : ''}</small>
+                    <i class="hl" aria-hidden="true" />
+                    <span class="num" aria-hidden="true">{c.day}</span>
+                    <span class="mark" aria-hidden="true">
+                      {numbers
+                        ? n > 0 && <span class="n">{n}</span>
+                        : t && (
+                            <svg viewBox={`0 0 ${t.width} 16`} style={`width: ${t.width}px`}>
+                              <path d={t.d} />
+                            </svg>
+                          )}
+                    </span>
                   </button>
                 );
               })}
@@ -235,12 +279,29 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
       </div>
       <div class="legend">
         <span>
-          <span class="swatch mine" />
+          <i class="lg-hl" aria-hidden="true" />
           {copy.calendar.legendMine}
         </span>
         <span>
-          <span class="swatch others" />
-          {copy.calendar.legendOthers}
+          {numbers ? (
+            // A sample count, hidden from screen readers, so it isn't copy.
+            <b class="lg-n" aria-hidden="true">5</b>
+          ) : (
+            <svg class="lg-tally" viewBox="0 0 22 16" aria-hidden="true">
+              <path d="M4 2 L4 14 M9 2 L9 14 M14 2 L14 14" />
+            </svg>
+          )}
+          {numbers ? copy.calendar.legendNumber : copy.calendar.legendTally}
+        </span>
+        {editable && (
+          <span>
+            <i class="lg-in" aria-hidden="true" />
+            {copy.calendar.legendSelectable}
+          </span>
+        )}
+        <span>
+          <i class="lg-out" aria-hidden="true" />
+          {copy.calendar.legendOut}
         </span>
       </div>
     </div>

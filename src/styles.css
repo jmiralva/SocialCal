@@ -25,13 +25,9 @@
   --linear: "CASL" 0, "MONO" 0, "CRSV" 0.5;
   --mono: "CASL" 0, "MONO" 1, "CRSV" 0.5;
   --topbar-h: 57px;
-  /* Old calendar and best-days tokens: removed with their rules in Tasks 2 and 4. */
+  /* Old best-days tokens (--g4, --you, --soft, --radius): removed with their rules in Task 4. */
   --soft: #e9ebe6;
-  --g1: #dcefc4;
-  --g2: #bfe29a;
-  --g3: #9ccf68;
   --g4: #6fae3a;
-  --g5: #3f7d1c;
   --you: #e8590c;
   --radius: 12px;
 }
@@ -92,31 +88,54 @@ h1, h2, h3 { font-family: var(--font); font-variation-settings: var(--casual); f
 .you { font-weight: 700; font-variation-settings: var(--casual); color: var(--on-hl); background: var(--hl); box-shadow: inset 0 -2px 0 var(--hl-edge); padding: 0 3px; border-radius: 2px; }
 
 .calendar { padding: 0 16px; }
-.dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 10px; text-align: center; color: var(--muted); text-transform: uppercase; }
+.dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 12px; text-align: center; color: var(--muted); }
 .month .dow-row { padding-bottom: 8px; }
 .month h3 { font-size: 15px; margin: 12px 0 10px; }
 .months { display: grid; grid-template-columns: 1fr; gap: 8px 28px; }
 .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; touch-action: pan-y; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
-.day { height: 44px; border-radius: 6px; background: var(--soft); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-weight: 700; font-size: 13px; cursor: pointer; }
-.day small { font-size: 9px; font-weight: 500; opacity: 0.75; line-height: 1; min-height: 9px; }
 /* Days are buttons for keyboards and screen readers; reset the browser's button look so they match the old divs. */
 button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit; line-height: inherit; color: inherit; -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; }
-.day.lvl-1 { background: color-mix(in srgb, var(--g1) 60%, var(--soft)); }
-.day.lvl-2 { background: color-mix(in srgb, var(--g2) 60%, var(--soft)); }
-.day.lvl-3 { background: color-mix(in srgb, var(--g3) 60%, var(--soft)); }
-.day.lvl-4 { background: color-mix(in srgb, var(--g4) 60%, var(--soft)); }
-.day.lvl-5 { background: color-mix(in srgb, var(--g5) 60%, var(--soft)); color: #fff; }
-.day.is-out, .day.is-past { background: transparent; color: var(--pencil); font-weight: 400; cursor: default; }
-.day.is-mine { box-shadow: inset 0 0 0 2px var(--you); }
-.day.is-mine::after { content: ''; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--you); }
-.grid.is-readonly .day { cursor: default; }
+/* Day squares. Written on .grid .day so they beat the button.day reset above (0,1,1). */
+.grid .day { position: relative; min-height: 66px; border-radius: 3px; padding: 6px 4px 7px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: space-between; color: var(--text); cursor: default; }
+.grid .day .num { position: relative; z-index: 1; width: 28px; height: 24px; display: grid; place-items: center; font-size: 13px; font-weight: 650; font-variation-settings: var(--mono); font-variant-numeric: tabular-nums; }
+.grid .day .mark { position: relative; z-index: 1; width: 100%; height: 18px; display: flex; align-items: center; justify-content: center; }
+.grid .day .mark svg { height: 16px; max-width: 100%; }
+.grid .day .mark path { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.grid .day .mark .n { font-variation-settings: var(--mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; color: var(--ink); }
+.grid .day.is-open { background: var(--sheet); box-shadow: inset 0 0 0 1px var(--edge); cursor: pointer; }
+.grid.is-readonly .day.is-open { cursor: default; }
+.grid .day.is-open.is-shaded { background: linear-gradient(rgba(var(--wash), calc(0.04 + var(--wash-max) * var(--share))), rgba(var(--wash), calc(0.04 + var(--wash-max) * var(--share)))), var(--sheet); }
+.grid .day.is-out, .grid .day.is-past { background: repeating-linear-gradient(135deg, transparent 0 5px, var(--rule) 5px 6px); }
+.grid .day.is-out .num, .grid .day.is-past .num { color: var(--pencil); font-weight: 400; }
+.grid .day.is-past .mark, .grid .day.is-past .hl { display: none; }
 @media (hover: hover) {
-  .grid:not(.is-readonly) .day:not(.is-out):not(.is-past):hover { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .grid:not(.is-readonly) .day.is-open:hover { box-shadow: inset 0 0 0 2px var(--ink); }
 }
-.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted); padding: 12px 0 0; }
-.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; vertical-align: -2px; margin-right: 4px; }
-.swatch.mine { box-shadow: inset 0 0 0 2px var(--you); }
-.swatch.others { background: var(--g3); }
+/* Highlighter: your days. The bottom edge is what makes it meet 3:1 in light mode. */
+.grid .day .hl { display: none; position: absolute; left: 4px; right: 4px; bottom: 4px; height: 22px; background: var(--hl); box-shadow: inset 0 -2px 0 var(--hl-edge); border-radius: 2px 6px 3px 7px / 6px 3px 7px 2px; transform: rotate(-2deg); transform-origin: left center; pointer-events: none; }
+.grid .day.is-mine:not(.is-past) .hl { display: block; }
+.grid .day.is-mine .mark path { stroke: var(--hl-mark); }
+.grid .day.is-mine .mark .n { color: var(--hl-mark); }
+.grid .day.is-swiping .hl { animation: swipe 260ms cubic-bezier(0.3, 0.7, 0.4, 1); }
+@keyframes swipe { from { transform: rotate(-2deg) scaleX(0); } }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--text); padding: 14px 0 0; }
+.legend > span { display: inline-flex; align-items: center; gap: 7px; }
+.lg-hl { width: 22px; height: 10px; background: var(--hl); box-shadow: inset 0 -2px 0 var(--hl-edge); border-radius: 2px 6px 3px 7px / 6px 3px 7px 2px; transform: rotate(-3deg); }
+.lg-tally { width: 22px; height: 16px; }
+.lg-tally path { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.lg-n { font-variation-settings: var(--mono); font-weight: 700; color: var(--ink); }
+.lg-in, .lg-out { width: 18px; height: 18px; border-radius: 3px; }
+.lg-in { background: var(--sheet); box-shadow: inset 0 0 0 1px var(--edge); }
+.lg-out { background: repeating-linear-gradient(135deg, transparent 0 4px, var(--rule) 4px 5px); }
+
+@media (max-width: 420px) {
+  .grid { gap: 3px; }
+  .grid .day { min-height: 60px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid .day.is-swiping .hl { animation: none; }
+}
 
 .pane-best { padding: 0 16px 16px; }
 .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 14px 0 6px; }
@@ -229,4 +248,10 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
 @media (forced-colors: active) {
   .field input, .field textarea, .btn-quiet, .marking-bar { border: 1px solid CanvasText; }
   .tabbar button[aria-selected='true'] { border-top: 2px solid CanvasText; }
+  .grid .day.is-open { border: 1px solid CanvasText; }
+  .grid .day .hl, .lg-hl { forced-color-adjust: none; background: Mark; }
+  .grid .day .mark path, .lg-tally path { stroke: currentColor; }
+  .grid .day.is-mine .mark { forced-color-adjust: none; color: MarkText; }
+  .grid .day.is-mine .mark path { stroke: MarkText; }
+  .grid .day.is-mine .mark .n { color: MarkText; }
 }
