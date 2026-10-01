@@ -269,11 +269,22 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
         </aside>
       </div>
 
-      <nav class="tabbar" role="tablist">
-        <button type="button" role="tab" aria-selected={tab === 'all'} onClick={() => setTab('all')}>
+      <nav
+        class="tabbar"
+        role="tablist"
+        onKeyDown={(e) => {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+          if (e.altKey || e.ctrlKey || e.metaKey) return; // leave browser shortcuts like Alt+Left (Back) alone
+          e.preventDefault();
+          const next = tab === 'all' ? 'best' : 'all'; // two tabs: both arrows switch
+          setTab(next);
+          e.currentTarget.querySelector<HTMLElement>(`[data-tab="${next}"]`)?.focus();
+        }}
+      >
+        <button type="button" role="tab" data-tab="all" tabIndex={tab === 'all' ? 0 : -1} aria-selected={tab === 'all'} onClick={() => setTab('all')}>
           {copy.event.tabAll}
         </button>
-        <button type="button" role="tab" aria-selected={tab === 'best'} onClick={() => setTab('best')}>
+        <button type="button" role="tab" data-tab="best" tabIndex={tab === 'best' ? 0 : -1} aria-selected={tab === 'best'} onClick={() => setTab('best')}>
           {copy.event.tabBest}
         </button>
       </nav>
