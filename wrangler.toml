@@ -7,3 +7,11 @@ binding = "DB"
 database_name = "socialcal"
 database_id = "e1f1259a-3e37-4ec8-9cc5-7610814219f7"
 migrations_dir = "migrations"
+
+# Preview deployments (every non-production branch) use their own database, so test data never reaches production.
+# Bindings don't inherit: anything added to the top-level block above must be added here too.
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "socialcal-preview"
+database_id = "3c627684-37aa-41f8-aed0-df1c1a5b55df"
+migrations_dir = "migrations"

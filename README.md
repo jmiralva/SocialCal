@@ -26,5 +26,8 @@ npm run typecheck
 ```bash
 npx wrangler login                 # once
 npm run db:migrate:remote
+npm run db:migrate:preview         # same migrations on the preview database
 npm run deploy
 ```
+
+Preview deployments (every branch pushed to GitHub except `main`) use the separate `socialcal-preview` database, set in `wrangler.toml` under `[env.preview]`. Run every new migration against both databases.

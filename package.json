@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.server.json --noEmit",
     "db:migrate:local": "wrangler d1 migrations apply socialcal --local",
     "db:migrate:remote": "wrangler d1 migrations apply socialcal --remote",
+    "db:migrate:preview": "wrangler d1 migrations apply socialcal-preview --remote --env preview",
     "deploy": "npm run build && wrangler pages deploy"
   },
   "dependencies": {
