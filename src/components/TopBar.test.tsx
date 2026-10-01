@@ -15,6 +15,14 @@ describe('TopBar', () => {
     expect(onHelp).toHaveBeenCalledOnce();
   });
 
+  it('shows the brand mark beside the wordmark without changing the link name', () => {
+    render(<TopBar onNew={vi.fn()} />);
+    const link = screen.getByRole('link', { name: 'socialcal' });
+    const mark = link.querySelector('svg.brand-mark');
+    expect(mark).toBeTruthy();
+    expect(mark!.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('styles Share as primary and New as quiet', () => {
     render(<TopBar onNew={vi.fn()} onShare={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'New' }).className).toBe('btn btn-quiet');

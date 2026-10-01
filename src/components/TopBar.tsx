@@ -1,3 +1,4 @@
+import { BrandMark } from './BrandMark';
 import { HelpIcon } from './HelpIcon';
 import { copy } from '../copy';
 
@@ -22,6 +23,7 @@ export function TopBar({
           onNew();
         }}
       >
+        <BrandMark />
         {copy.brand}
       </a>
       <div class="topbar-actions">

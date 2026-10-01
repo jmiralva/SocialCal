@@ -64,7 +64,13 @@ h1, h2, h3 { font-family: var(--font); font-variation-settings: var(--casual); f
 .linklike.block { display: block; margin: 12px auto 0; font-size: 13px; color: var(--ink); }
 
 .topbar { position: sticky; top: 0; z-index: 4; display: flex; justify-content: space-between; align-items: center; height: var(--topbar-h); padding: 0 max(16px, calc((100% - 1200px) / 2 + 16px)); background: var(--paper); border-bottom: 1px solid var(--rule); }
-.wordmark { font-family: var(--font); font-variation-settings: var(--casual); font-weight: 800; font-size: 18px; color: var(--ink); text-decoration: none; }
+.wordmark { font-family: var(--font); font-variation-settings: var(--casual); font-weight: 800; font-size: 18px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.brand-mark { width: 26px; height: 26px; flex: none; overflow: visible; }
+.bm-page { fill: var(--sheet); stroke: var(--ink); stroke-width: 7; }
+.bm-band { fill: var(--ink); }
+.bm-binder { fill: var(--ink); stroke: var(--sheet); stroke-width: 3; }
+.bm-cell { fill: var(--rule); }
+.bm-loop { fill: none; stroke: var(--marker); stroke-width: 7.5; stroke-linecap: round; stroke-linejoin: round; }
 .topbar-actions { display: flex; gap: 8px; align-items: center; }
 .help-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
 .help-icon-btn:hover { color: var(--text); }
@@ -263,5 +269,10 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
   .grid .day.is-mine .mark path { stroke: MarkText; }
   .grid .day.is-mine .mark .n { color: MarkText; }
   .ring path { stroke: CanvasText; }
+  .bm-page { fill: Canvas; stroke: CanvasText; }
+  .bm-band, .bm-binder { fill: CanvasText; }
+  .bm-binder { stroke: Canvas; }
+  .bm-cell { fill: GrayText; }
+  .bm-loop { stroke: CanvasText; }
   .name.is-me { forced-color-adjust: none; background: Mark; color: MarkText; }
 }
