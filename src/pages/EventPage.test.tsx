@@ -38,6 +38,59 @@ beforeEach(() => {
 afterEach(() => history.replaceState(null, '', '/'));
 
 describe('EventPage', () => {
+  it('circles the best day once two people share it, without drawing it on load', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(
+      withMe(CREATOR, {
+        participants: [
+          { id: 'J', name: 'Jorge', dates: ['2030-10-10'] },
+          { id: 'M', name: 'Maya', dates: ['2030-10-10'] },
+        ],
+      }),
+    );
+    const { container } = render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByText('Jorge', { selector: 'b.you' });
+    const day = container.querySelector('[data-date="2030-10-10"]')!;
+    expect(day.querySelector('.ring')).toBeTruthy();
+    expect(day.querySelector('.ring.draw')).toBeNull();
+    expect(container.querySelector('[data-date="2030-10-11"] .ring')).toBeNull();
+  });
+
+  it('circles nothing while only one of two people has marked dates', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(
+      withMe(CREATOR, {
+        participants: [
+          { id: 'J', name: 'Jorge', dates: ['2030-10-10', '2030-10-11'] },
+          { id: 'M', name: 'Maya', dates: [] },
+        ],
+      }),
+    );
+    const { container } = render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByText('Jorge', { selector: 'b.you' });
+    expect(container.querySelector('.ring')).toBeNull();
+    expect(screen.getByText('Nobody else yet')).toBeTruthy();
+  });
+
+  it('draws the circle when marking a day makes it the best', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(
+      withMe(CREATOR, {
+        participants: [
+          { id: 'J', name: 'Jorge', dates: ['2030-10-10'] },
+          { id: 'M', name: 'Maya', dates: ['2030-10-10', '2030-10-11'] },
+        ],
+      }),
+    );
+    vi.mocked(api.updatePerson).mockImplementation(never);
+    const { container } = render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByText('Jorge', { selector: 'b.you' });
+    expect(container.querySelector('[data-date="2030-10-11"] .ring')).toBeNull();
+    // Let Preact run the page's pending passive effects (they wait a frame). Otherwise its "new identity: drop unsaved
+    // dates" reset runs after the click and wipes the local marks.
+    await act(() => new Promise((r) => setTimeout(r, 120)));
+    fireEvent.click(container.querySelector('[data-date="2030-10-11"]')!, { detail: 0 }); // mark Oct 11 (keyboard-style click)
+    expect(container.querySelector('[data-date="2030-10-11"] .ring.draw')).toBeTruthy();
+    expect(container.querySelector('[data-date="2030-10-10"] .ring.draw')).toBeNull();
+  });
+
   it('browses on Escape from the name sheet', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
@@ -52,7 +105,7 @@ describe('EventPage', () => {
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     await screen.findByRole('dialog', { name: 'Fall camping trip' });
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
     await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Your name')));
@@ -108,8 +161,8 @@ describe('EventPage', () => {
   it('opens and closes help from the top bar', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(withMe(CREATOR));
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'How socialcal works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: 'How SocialCal works' }));
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -117,7 +170,7 @@ describe('EventPage', () => {
   it('closes help from the overlay', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(withMe(CREATOR));
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'How socialcal works' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'How SocialCal works' }));
     fireEvent.click(document.querySelector('.overlay')!);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -127,7 +180,7 @@ describe('EventPage', () => {
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     await screen.findByRole('dialog', { name: 'Fall camping trip' });
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Fall camping trip' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
@@ -137,7 +190,7 @@ describe('EventPage', () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Just browse' }));
-    fireEvent.click(screen.getByRole('button', { name: 'How socialcal works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'How SocialCal works' }));
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByText('Viewing only')).toBeTruthy();

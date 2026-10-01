@@ -12,11 +12,25 @@ vi.mock(import('../lib/api'), async (importOriginal) => {
 const type = (label: string, value: string) => fireEvent.input(screen.getByLabelText(label), { target: { value } });
 
 describe('CreatePage', () => {
+  it('marks invalid fields and points them at their error', async () => {
+    render(<CreatePage navigate={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Create calendar' }));
+    await screen.findByText('Give the plan a name.');
+    // The error sits inside the <label>, so the label text now ends with it: match the start only.
+    const plan = screen.getByLabelText(/^What's the plan\?/);
+    expect(plan.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(plan.getAttribute('aria-describedby')!)!.textContent).toBe('Give the plan a name.');
+    const name = screen.getByLabelText(/^Your name/);
+    expect(name.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(name.getAttribute('aria-describedby')!)!.textContent).toBe('Enter your name.');
+    expect(screen.getByLabelText('Description').getAttribute('aria-invalid')).toBeNull();
+  });
+
   it('opens and closes help without submitting the form', () => {
     vi.mocked(api.createEvent).mockClear();
     render(<CreatePage navigate={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByText('Give the plan a name.')).toBeNull();

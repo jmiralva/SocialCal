@@ -10,7 +10,7 @@ export function NotFound({ navigate }: { navigate: Navigate }) {
         <div class="empty">
           <h3>{copy.notFound.title}</h3>
           <p>{copy.notFound.body}</p>
-          <button type="button" class="btn btn-new" onClick={() => navigate('/')}>
+          <button type="button" class="btn btn-quiet" onClick={() => navigate('/')}>
             {copy.notFound.cta}
           </button>
         </div>

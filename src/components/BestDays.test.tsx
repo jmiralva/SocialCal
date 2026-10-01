@@ -19,28 +19,29 @@ const renderBest = (result: BestResult, isCreator = false) => {
 };
 
 describe('BestDays', () => {
-  it('styles the share buttons green', () => {
-    renderBest({ kind: 'not-enough-people' });
-    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn btn-share');
+  it('styles the share button as primary', () => {
+    renderBest({ kind: 'not-enough-people', marked: ['j'] });
+    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn');
   });
 
-  it('styles the no-majority share button green for non-creators', () => {
+  it('styles the no-majority share button as primary for non-creators', () => {
     renderBest({ kind: 'no-majority', max: 1, total: 4, closest: [] });
-    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn btn-share');
+    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn');
   });
 
-  it('uses singular labels for one day each', () => {
+  it('uses singular labels and the shared subtitle for one day', () => {
     renderBest({ kind: 'ok', total: 4, top: [score('2026-11-07', ['j', 'm', 's'])], next: [score('2026-10-09', ['m', 's'])] });
-    expect(screen.getByText('Best day')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Best day' })).toBeTruthy();
+    expect(screen.getByText('3 of 4 people available')).toBeTruthy();
     expect(screen.getByText('Sat, Nov 7')).toBeTruthy();
     expect(screen.getByText('3 of 4')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'See 1 other day' }));
-    expect(screen.getByText('Next best day')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Next best day' })).toBeTruthy();
     expect(screen.getByText('Fri, Oct 9')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Hide other days' })).toBeTruthy();
   });
 
-  it('uses plural labels and highlights top cards', () => {
+  it('uses plural labels, circles every tied day, and marks you and who is not free', () => {
     const { container } = render(
       <BestDays
         result={{
@@ -54,14 +55,23 @@ describe('BestDays', () => {
         isCreator={false}
         onShare={() => {}}
         onEditDates={() => {}}
+        newBestDays={new Set(['2026-10-24'])}
       />,
     );
-    expect(screen.getByText('Best days')).toBeTruthy();
-    expect(container.querySelectorAll('.day-card.is-top')).toHaveLength(2);
+    expect(screen.getByRole('heading', { level: 2, name: 'Best days' })).toBeTruthy();
+    expect(screen.getByText('3 of 4 people available')).toBeTruthy();
+    const top = container.querySelectorAll('ol li.day-row.is-top');
+    expect(top).toHaveLength(2);
+    expect(top[0].querySelector('.ring')).toBeTruthy();
+    expect(top[0].querySelector('.ring.draw')).toBeNull();
+    expect(top[1].querySelector('.ring.draw')).toBeTruthy();
+    expect(top[0].querySelector('.name.is-me')!.textContent).toBe('You');
+    expect(top[1].querySelector('.name.is-no s')!.textContent).toBe('You');
+    expect(top[1].textContent).toContain('You (not free)');
+    expect(container.querySelector('.meter')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'See 2 other days' }));
-    expect(screen.getByText('Next best days')).toBeTruthy();
-    expect(container.querySelector('.pill.is-me')?.textContent).toBe('Jorge');
-    expect(container.querySelector('.pill.is-no')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Next best days' })).toBeTruthy();
+    expect(container.querySelectorAll('li.day-row.is-secondary .ring')).toHaveLength(0);
   });
 
   it('notes when no other day reaches half', () => {
@@ -69,8 +79,36 @@ describe('BestDays', () => {
     expect(screen.getByText('No other days work for at least half the group.')).toBeTruthy();
   });
 
+  it('asks a viewer who has not marked days to add theirs when one other person has', () => {
+    renderBest({ kind: 'not-enough-people', marked: ['m'] });
+    expect(screen.getByRole('heading', { level: 2, name: 'Add your days' })).toBeTruthy();
+    expect(screen.getByText("Best days show up once you mark the days you're free.")).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Share the link' })).toBeNull();
+    expect(screen.queryByText('Nobody else yet')).toBeNull();
+  });
+
+  it('asks a browsing viewer (no meId) to add days when one person has marked', () => {
+    render(<BestDays result={{ kind: 'not-enough-people', marked: ['m'] }} participants={people} isCreator={false} onShare={() => {}} onEditDates={() => {}} />);
+    expect(screen.getByText('Add your days')).toBeTruthy();
+  });
+
+  it('separates names with a space and marks lists as lists', () => {
+    const { container } = render(
+      <BestDays
+        result={{ kind: 'ok', total: 4, top: [score('2026-10-17', ['j', 'm', 'p'])], next: [] }}
+        participants={people}
+        meId="j"
+        isCreator={false}
+        onShare={() => {}}
+        onEditDates={() => {}}
+      />,
+    );
+    expect(container.querySelector('.names')!.textContent).toMatch(/^You Maya Sam.*Priya$/);
+    expect(container.querySelector('ol.day-rows')!.getAttribute('role')).toBe('list');
+  });
+
   it('shows the not-enough-people state', () => {
-    const { onShare } = renderBest({ kind: 'not-enough-people' });
+    const { onShare } = renderBest({ kind: 'not-enough-people', marked: ['j'] });
     expect(screen.getByText('Nobody else yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Share the link' }));
     expect(onShare).toHaveBeenCalled();
@@ -83,7 +121,8 @@ describe('BestDays', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit date range' }));
     expect(onEditDates).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Show closest days anyway' }));
-    expect(screen.getByText('Closest day so far')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Closest day so far' })).toBeTruthy();
+    expect(document.querySelectorAll('li.day-row.is-secondary')).toHaveLength(1);
   });
 
   it('no-majority copy for friends offers sharing', () => {

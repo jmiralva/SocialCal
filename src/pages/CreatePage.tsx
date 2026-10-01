@@ -71,8 +71,10 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
             placeholder={copy.create.yourNamePlaceholder}
             autoComplete="given-name"
             onInput={(e) => setCreatorName(e.currentTarget.value)}
+            aria-invalid={errors.creatorName ? true : undefined}
+            aria-describedby={errors.creatorName ? 'field-creatorName-error' : undefined}
           />
-          {errors.creatorName && <span class="field-error">{errors.creatorName}</span>}
+          {errors.creatorName && <span class="field-error" id="field-creatorName-error">{errors.creatorName}</span>}
         </label>
         {formError && <p class="form-error">{formError}</p>}
         <button type="submit" class="btn btn-block" disabled={busy}>

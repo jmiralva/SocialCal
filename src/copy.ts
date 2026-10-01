@@ -5,10 +5,10 @@ import { plural } from './lib/best';
 // A string with a bold lead-in is split into { lead, rest } so the markup stays in the component.
 
 export const copy = {
-  brand: 'socialcal',
+  brand: 'SocialCal',
 
   topBar: {
-    help: 'How socialcal works',
+    help: 'How SocialCal works',
     new: 'New',
     share: 'Share',
   },
@@ -63,13 +63,12 @@ export const copy = {
   },
 
   calendar: {
-    weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-    count: (n: number, total: number) => `${n}/${total}`,
-    legendMine: 'Your days',
-    legendOthers: 'Others available',
+    weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
     // Screen reader label for a day button. `date` comes from formatDayLong.
-    dayLabel: (date: string, count: number, total: number) =>
-      count && total ? `${date}, ${count} of ${total} ${plural(total, 'person', 'people')} free` : `${date}, nobody free yet`,
+    // `best` mirrors the red circle.
+    dayLabel: (date: string, count: number, total: number, best = false) =>
+      (count && total ? `${date}, ${count} of ${total} ${plural(total, 'person', 'people')} free` : `${date}, nobody free yet`) +
+      (best ? ', best day' : ''),
   },
 
   join: {
@@ -95,6 +94,8 @@ export const copy = {
   best: {
     aloneTitle: 'Nobody else yet',
     aloneBody: 'Best days show up once others add their availability.',
+    addDaysTitle: 'Add your days',
+    addDaysBody: "Best days show up once you mark the days you're free.",
     share: 'Share the link',
     noMajorityTitle: 'No day works for half the group yet',
     noMajorityMax: (max: number, total: number) => `The most overlap so far is ${max} of ${total}.`,
@@ -110,10 +111,13 @@ export const copy = {
     seeOthers: (n: number) => `See ${n} other ${plural(n, 'day', 'days')}`,
     hideOthers: 'Hide other days',
     cardCount: (count: number, total: number) => `${count} of ${total}`,
+    subtitle: (count: number, total: number) => `${count} of ${total} people available`,
+    you: 'You',
+    notFree: ' (not free)', // visually hidden after a struck-through name
   },
 
   help: {
-    title: 'How socialcal works',
+    title: 'How SocialCal works',
     sub: 'Find a day that works for a group, without a group chat full of dates.',
     planHeading: 'Create a plan',
     create: 'One person creates a calendar with a date window.',
@@ -123,12 +127,13 @@ export const copy = {
     drag: { lead: 'Drag', rest: ' across days to mark several at once.' },
     dragTouch: { lead: 'Press and hold', rest: ', then drag to mark several days.' },
     keyboard: { lead: 'Use the arrow keys', rest: ' to navigate between days and enter or space to toggle the selected date.' },
-    shading: 'Dates in darker green mean more people are free.',
+    highlight: 'Your days get a yellow highlight.',
+    circle: 'The days with the most people free get circled.',
     bestDays: { lead: 'Best days', rest: ' ranks the days that work for the most people.' },
     noSignUp: 'No sign-up or accounts. Just share the link.',
     aboutHeading: 'About',
     about: {
-      builtBy: 'socialcal is built by',
+      builtBy: 'SocialCal is built by',
       author: 'Jorge Mir Alvarez',
       authorUrl: 'https://jmiralva.me',
       openSource: 'and open source on',

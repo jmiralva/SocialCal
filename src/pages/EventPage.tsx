@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { Navigate } from '../App';
+import { useNewBestDays } from '../hooks/useNewBestDays';
 import { useEvent } from '../hooks/useEvent';
 import { api, ApiRequestError } from '../lib/api';
 import { computeBest, countByDay } from '../lib/best';
@@ -7,7 +8,7 @@ import { createSaver, type SaverStatus } from '../lib/saver';
 import { editUrl, eventUrl, readEditKeyFromHash, shareOrCopy } from '../lib/share';
 import { clearJustCreated, peekJustCreated } from '../lib/storage';
 import { monthGrids, rangeDays, todayLocalISO } from '../../shared/dates';
-import type { EventPatch, Participant } from '../../shared/types';
+import type { EventPatch, EventPayload, Participant } from '../../shared/types';
 import { TopBar } from '../components/TopBar';
 import { EventHeader } from '../components/EventHeader';
 import { MarkingBar } from '../components/MarkingBar';
@@ -29,6 +30,10 @@ const isAuthError = (e: unknown) => e instanceof ApiRequestError && (e.status ==
 const errorMessage = (e: unknown) => (isClientError(e) ? e.message : OFFLINE);
 
 const WEEK_START = weekStartForLocale();
+
+// The current person's unsaved dates replace their saved ones, so the calendar and Best days react immediately.
+const withLocalDates = (data: EventPayload, localDates: string[] | null) =>
+  data.participants.map((p) => (localDates && p.id === data.me?.participantId ? { ...p, dates: localDates } : p));
 
 export function EventPage({ eventId, navigate }: { eventId: string; navigate: Navigate }) {
   const { state, refresh, retry, setData } = useEvent(eventId);
@@ -138,6 +143,17 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
     };
   }, [saver]);
 
+  // Before the early returns: the circle hooks below need the best days on every render.
+  const ready = state.status === 'ready' ? state.data : null;
+  const today = todayLocalISO();
+  const participants = ready ? withLocalDates(ready, localDates) : [];
+  const best = ready ? computeBest(participants, ready.event.startDate, ready.event.endDate, today) : null;
+  const bestList = best?.kind === 'ok' ? best.top.map((s) => s.date) : [];
+  const bestKey = bestList.join(',');
+  // Keyed on the joined string so the Set stays the same object across polls; don't change the deps to bestList.
+  const bestDays = useMemo(() => new Set(bestList), [bestKey]);
+  const newBestDays = useNewBestDays(ready ? bestList : null);
+
   if (state.status === 'loading') return <div class="center">{copy.event.loading}</div>;
   if (state.status === 'error') {
     if (state.notFound) return <NotFound navigate={navigate} />;
@@ -155,11 +171,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
   }
 
   const { event, me } = state.data;
-  const today = todayLocalISO();
   const myParticipant = state.data.participants.find((p) => p.id === me?.participantId);
-  const participants = state.data.participants.map((p) =>
-    myParticipant && p.id === myParticipant.id && localDates ? { ...p, dates: localDates } : p,
-  );
   const myDates = new Set(participants.find((p) => p.id === myParticipant?.id)?.dates ?? []);
   const myCount = [...myDates].filter((d) => d >= event.startDate && d <= event.endDate).length;
   const isCreator = me?.isCreator ?? false;
@@ -253,18 +265,22 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
               mine={myDates}
               selectableDays={selectableDays}
               editable={Boolean(myParticipant) && !claiming}
+              bestDays={bestDays}
+              newBestDays={newBestDays}
               onChange={changeDates}
             />
           </section>
         </main>
         <aside class="pane-best">
+          {/* Non-null: state is ready below the early returns. */}
           <BestDays
-            result={computeBest(participants, event.startDate, event.endDate, today)}
+            result={best!}
             participants={participants}
             meId={myParticipant?.id}
             isCreator={isCreator}
             onShare={share}
             onEditDates={() => setSheet('edit')}
+            newBestDays={newBestDays}
           />
         </aside>
       </div>

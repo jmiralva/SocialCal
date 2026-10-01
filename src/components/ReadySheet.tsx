@@ -19,14 +19,14 @@ export function ReadySheet({ shareUrl, editUrl, onClose }: { shareUrl: string; e
       <p class="copy-label">{copy.ready.shareLabel}</p>
       <div class="copy-row">
         <code>{shareUrl}</code>
-        <button type="button" class="btn btn-share" onClick={() => copyText('share', shareUrl)}>
+        <button type="button" class="btn" onClick={() => copyText('share', shareUrl)}>
           {copied === 'share' ? copy.ready.copied : copy.ready.copy}
         </button>
       </div>
       <p class="copy-label">{copy.ready.editLabel}</p>
       <div class="copy-row">
         <code>{editUrl}</code>
-        <button type="button" class="btn btn-ghost" onClick={() => copyText('edit', editUrl)}>
+        <button type="button" class="btn btn-quiet" onClick={() => copyText('edit', editUrl)}>
           {copied === 'edit' ? copy.ready.copied : copy.ready.copy}
         </button>
       </div>

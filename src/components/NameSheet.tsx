@@ -23,6 +23,8 @@ export function NameSheet({
 }) {
   const [name, setName] = useState(initialName);
   const [error, setError] = useState<string | null>(null);
+  // True only for a bad name, not for a failed save, so a server error doesn't flag a valid name.
+  const [nameInvalid, setNameInvalid] = useState(false);
   const [busy, setBusy] = useState(false);
   const field = useRef<HTMLInputElement>(null);
 
@@ -32,8 +34,10 @@ export function NameSheet({
     const invalid = validatePersonName(trimmed);
     if (invalid) {
       setError(invalid);
+      setNameInvalid(true);
       return;
     }
+    setNameInvalid(false);
     setBusy(true);
     const result = await onSubmit(trimmed);
     setBusy(false);
@@ -54,11 +58,13 @@ export function NameSheet({
             ref={field}
             autoComplete="given-name"
             onInput={(e) => setName(e.currentTarget.value)}
+            aria-invalid={nameInvalid ? true : undefined}
+            aria-describedby={error ? 'name-error' : undefined}
           />
         </label>
-        {error && <p class="form-error">{error}</p>}
+        {error && <p class="form-error" id="name-error">{error}</p>}
         <div class="sheet-actions">
-          <button type="button" class="btn btn-ghost" onClick={secondary.onClick}>
+          <button type="button" class="btn btn-quiet" onClick={secondary.onClick}>
             {secondary.label}
           </button>
           <button type="submit" class="btn" disabled={busy}>

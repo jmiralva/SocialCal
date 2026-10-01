@@ -24,7 +24,29 @@ describe('countByDay', () => {
 
 describe('computeBest', () => {
   it('needs at least two people', () => {
-    expect(computeBest([p('a', ['2026-10-09'])], ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people' });
+    expect(computeBest([p('a', ['2026-10-09'])], ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people', marked: ['a'] });
+  });
+
+  it('needs two people who have marked dates', () => {
+    const people = [p('a', ['2026-10-09']), p('b', [])];
+    expect(computeBest(people, ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people', marked: ['a'] });
+  });
+
+  it('ignores a person whose only date is in the past', () => {
+    const people = [p('a', ['2026-10-09']), p('b', ['2026-10-25'])];
+    expect(computeBest(people, ...RANGE, '2026-10-20')).toEqual({ kind: 'not-enough-people', marked: ['b'] });
+  });
+
+  it('ignores a person whose only date is outside the range', () => {
+    const people = [p('a', ['2026-12-25']), p('b', ['2026-10-09'])];
+    expect(computeBest(people, ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people', marked: ['b'] });
+  });
+
+  it('counts people who joined without dates in the total', () => {
+    const people = [p('a', ['2026-10-09']), p('b', ['2026-10-09']), p('c', [])];
+    const result = computeBest(people, ...RANGE, TODAY);
+    expect(result.kind).toBe('ok');
+    if (result.kind === 'ok') expect(result.total).toBe(3);
   });
 
   it('returns a clear winner and next best days at or above half', () => {
@@ -65,9 +87,9 @@ describe('computeBest', () => {
     expect(r.closest.map((s) => s.date)).toEqual(['2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11']);
   });
 
-  it('reports no majority with zero overlap when nobody picked days', () => {
+  it('waits for two people with dates when nobody picked days', () => {
     const r = computeBest([p('a', []), p('b', [])], ...RANGE, TODAY);
-    expect(r).toEqual({ kind: 'no-majority', max: 0, total: 2, closest: [] });
+    expect(r).toEqual({ kind: 'not-enough-people', marked: [] });
   });
 
   it('ignores past days and dates outside the range', () => {
