@@ -54,7 +54,7 @@ test('creator and friend find the best days together', async ({ page, browser })
   await friend.getByRole('button', { name: 'How it works' }).click();
   await expect(friend.getByRole('dialog', { name: 'How SocialCal works' })).toBeVisible();
   await friend.getByRole('button', { name: 'Got it' }).click();
-  await expect(friend.getByRole('dialog', { name: 'Fall camping trip' })).toBeVisible();
+  await expect(friend.getByRole('dialog', { name: 'Help find a date for Fall camping trip' })).toBeVisible();
   await friend.getByLabel('Your name').fill('Maya');
   await friend.getByRole('button', { name: 'Continue' }).click();
   await expect(friend.getByText('Marking days for')).toBeVisible();
@@ -126,7 +126,7 @@ test('a keyboard-only visitor joins, marks a day, and uses help', async ({ brows
   await page.goto(`/e/${eventId}`);
 
   // Join with the keyboard
-  await expect(page.getByRole('dialog', { name: 'Keyboard picnic' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Help find a date for Keyboard picnic' })).toBeVisible();
   await expect(page.getByLabel('Your name')).toBeFocused();
   await page.keyboard.type('Sam');
   await page.keyboard.press('Enter');
@@ -158,4 +158,30 @@ test('a keyboard-only visitor joins, marks a day, and uses help', async ({ brows
   await expect(help).toBeFocused();
 
   await context.close();
+});
+
+test('event links carry a preview card and other pages carry the generic one', async ({ request }) => {
+  const created = await request.post('/api/events', {
+    data: { name: 'Tom & Jerry night', description: '', startDate: iso(1), endDate: iso(1), creatorName: 'Ana' },
+  });
+  expect(created.ok()).toBe(true);
+  const { eventId } = (await created.json()) as { eventId: string };
+
+  const event = await request.get(`/e/${eventId}`);
+  expect(event.headers()['x-robots-tag']).toBe('noindex');
+  const html = await event.text();
+  expect(html).toContain('<meta property="og:title" content="Help find a date for Tom &amp; Jerry night" />');
+  expect(html).toMatch(/<meta property="og:description" content="Ana wants to find a day that works\. Add your availability for [A-Z][a-z]{2} \d{1,2}\." \/>/);
+  expect(html).toContain(`<meta property="og:url" content="http://localhost:8788/e/${eventId}" />`);
+  expect(html).toContain('<meta property="og:image" content="http://localhost:8788/og.png" />');
+  expect(html).toContain('<title>SocialCal</title>');
+
+  const home = await (await request.get('/')).text();
+  expect(home).toContain('<meta property="og:title" content="SocialCal: find the day that works for everyone" />');
+  expect(home).toContain('<meta property="og:image" content="https://socialcal-arx.pages.dev/og.png" />');
+  expect(home).not.toContain('og:url');
+
+  const image = await request.get('/og.png');
+  expect(image.ok()).toBe(true);
+  expect(image.headers()['content-type']).toBe('image/png');
 });
