@@ -309,8 +309,8 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
 
       {!myParticipant && !viewOnly && !claiming && !cookiesBlocked && sheet === null && (
         <NameSheet
-          title={event.name}
-          subtitle={copy.join.sub}
+          title={copy.join.title(event.name)}
+          subtitle={copy.join.sub(event.creatorName)}
           submitLabel={copy.join.submit}
           onSubmit={join}
           secondary={{ label: copy.join.look, onClick: () => setViewOnly(true) }}

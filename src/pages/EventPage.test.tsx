@@ -94,7 +94,7 @@ describe('EventPage', () => {
   it('browses on Escape from the name sheet', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    await screen.findByRole('dialog', { name: 'Fall camping trip' });
+    await screen.findByRole('dialog', { name: 'Help find a date for Fall camping trip' });
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByText('Viewing only')).toBeTruthy();
@@ -103,11 +103,11 @@ describe('EventPage', () => {
   it('brings the name sheet back with its field focused after Escape from help', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    await screen.findByRole('dialog', { name: 'Fall camping trip' });
+    await screen.findByRole('dialog', { name: 'Help find a date for Fall camping trip' });
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
     expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: 'Help find a date for Fall camping trip' })).toBeTruthy();
     await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Your name')));
   });
 
@@ -131,11 +131,18 @@ describe('EventPage', () => {
   it('asks a new visitor for their name and supports just looking', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: 'Help find a date for Fall camping trip' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Just browse' }));
     expect(screen.getByText('Viewing only')).toBeTruthy();
     expect(screen.getByText('Created by')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Edit event' })).toBeNull();
+  });
+
+  it('tells a new visitor who is asking', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(payload);
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    const sheet = await screen.findByRole('dialog', { name: 'Help find a date for Fall camping trip' });
+    expect(sheet.textContent).toContain('Jorge wants to find a day that works. Enter your name and add your availability.');
   });
 
   it('shows a duplicate-name error from the server', async () => {
@@ -178,12 +185,12 @@ describe('EventPage', () => {
   it('swaps the name sheet for help and back for a new visitor', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    await screen.findByRole('dialog', { name: 'Fall camping trip' });
+    await screen.findByRole('dialog', { name: 'Help find a date for Fall camping trip' });
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
     expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
-    expect(screen.queryByRole('dialog', { name: 'Fall camping trip' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Help find a date for Fall camping trip' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
-    expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: 'Help find a date for Fall camping trip' })).toBeTruthy();
   });
 
   it('does not bring the name sheet back after help when just looking', async () => {

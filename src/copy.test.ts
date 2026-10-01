@@ -18,3 +18,10 @@ describe('copy.calendar.dayLabel', () => {
     expect(copy.calendar.dayLabel('Sunday, October 11', 0, 0)).toBe('Sunday, October 11, nobody free yet');
   });
 });
+
+describe('copy.join', () => {
+  it('asks for help with the event, naming the creator', () => {
+    expect(copy.join.title('Fall camping trip')).toBe('Help find a date for Fall camping trip');
+    expect(copy.join.sub('Jorge')).toBe('Jorge wants to find a day that works. Enter your name and add your availability.');
+  });
+});

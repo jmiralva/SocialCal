@@ -72,7 +72,9 @@ export const copy = {
   },
 
   join: {
-    sub: 'Enter your name and select your availability to find the best day to meet.',
+    // Mirrors the link preview card in server/preview.ts: keep the wording in sync.
+    title: (event: string) => `Help find a date for ${event}`,
+    sub: (creator: string) => `${creator} wants to find a day that works. Enter your name and add your availability.`,
     submit: 'Continue',
     look: 'Just browse',
   },
