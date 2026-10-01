@@ -88,3 +88,36 @@ export async function getEvent(env: Env, id: string): Promise<EventPayload> {
     participants: results.map((p) => ({ id: p.id, name: p.name, dates: JSON.parse(p.dates) as string[] })),
   };
 }
+
+export async function updateEvent(env: Env, request: Request, id: string, body: Record<string, unknown>) {
+  const row = await requireEditKey(env, request, id);
+  const merged = {
+    name: 'name' in body ? str(body.name) : row.name,
+    description: 'description' in body ? str(body.description) : row.description,
+    startDate: 'startDate' in body ? str(body.startDate) : row.start_date,
+    endDate: 'endDate' in body ? str(body.endDate) : row.end_date,
+  };
+  const message = firstError(validateEventFields(merged));
+  if (message) throw new ApiError(400, 'invalid', message);
+  await env.DB.prepare('UPDATE events SET name = ?, description = ?, start_date = ?, end_date = ?, updated_at = ? WHERE id = ?')
+    .bind(merged.name, merged.description, merged.startDate, merged.endDate, new Date().toISOString(), id)
+    .run();
+  return {
+    event: toEventInfo({
+      ...row,
+      name: merged.name,
+      description: merged.description,
+      start_date: merged.startDate,
+      end_date: merged.endDate,
+    }),
+  };
+}
+
+export async function claimCreator(env: Env, request: Request, id: string) {
+  const row = await requireEditKey(env, request, id);
+  const token = randomId();
+  await env.DB.prepare('UPDATE participants SET token_hash = ?, updated_at = ? WHERE id = ?')
+    .bind(await sha256(token), new Date().toISOString(), row.creator_participant_id)
+    .run();
+  return { participantId: row.creator_participant_id, token };
+}

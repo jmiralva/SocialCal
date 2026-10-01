@@ -1,6 +1,7 @@
 import type { Env } from './env';
 import { ApiError, errorResponse, json, readBody } from './errors';
-import { createEvent, getEvent } from './events';
+import { claimCreator, createEvent, getEvent, updateEvent } from './events';
+import { joinEvent, updatePerson } from './people';
 
 export type { Env };
 
@@ -13,6 +14,12 @@ export async function handleApi(request: Request, env: Env): Promise<Response> {
 
     if (!id && method === 'POST') return json(await createEvent(env, await readBody(request)), 201);
     if (id && !sub && method === 'GET') return json(await getEvent(env, id));
+    if (id && !sub && method === 'PATCH') return json(await updateEvent(env, request, id, await readBody(request)));
+    if (id && sub === 'claim-creator' && !pid && method === 'POST') return json(await claimCreator(env, request, id));
+    if (id && sub === 'people' && !pid && method === 'POST') return json(await joinEvent(env, id, await readBody(request)), 201);
+    if (id && sub === 'people' && pid && method === 'PATCH') {
+      return json(await updatePerson(env, request, id, pid, await readBody(request)));
+    }
     throw notFound();
   } catch (e) {
     if (e instanceof ApiError) return errorResponse(e);
