@@ -43,6 +43,10 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
     gridRef.current?.querySelector<HTMLElement>(`[data-date="${iso}"]`)?.focus({ preventScroll });
 
   const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && e.repeat) {
+      e.preventDefault(); // a held Enter would otherwise toggle the day back and forth
+      return;
+    }
     if (e.altKey || e.ctrlKey || e.metaKey) return; // leave browser shortcuts like Alt+Left (Back) alone
     const from = dateOf(e.target as Element);
     if (!from || !inRange.length) return;
@@ -77,14 +81,26 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
     setFocusDate(to);
     focusDay(to);
   };
+  // Keyboard Enter/Space and screen reader activation arrive as a click with no pointer press before it.
+  const onDayClick = (e: MouseEvent) => {
+    if (e.detail > 0 && Date.now() < ignoreClickUntil.current) {
+      ignoreClickUntil.current = 0;
+      return;
+    }
+    const date = dateOf(e.currentTarget as Element);
+    if (!editable || !date || !selectable.has(date)) return;
+    onChange(applySpan(mine, selectableDays, date, date, !mine.has(date)));
+  };
   const latest = useRef({ mine, selectable, selectableDays, onChange });
   latest.current = { mine, selectable, selectableDays, onChange };
-  const drag = useRef<{ from: string; add: boolean; snap: Set<string> } | null>(null);
+  const drag = useRef<{ from: string; to: string; add: boolean; snap: Set<string> } | null>(null);
   const press = useRef<{ x: number; y: number; date: string; timer: ReturnType<typeof setTimeout> } | null>(null);
+  // After a press toggles, its own click (detail >= 1, sometimes a task later on touch) must not toggle back.
+  const ignoreClickUntil = useRef(0);
 
   const begin = (date: string) => {
     const { mine: current, selectableDays: days, onChange: emit } = latest.current;
-    const state = { from: date, add: !current.has(date), snap: new Set(current) };
+    const state = { from: date, to: date, add: !current.has(date), snap: new Set(current) };
     drag.current = state;
     emit(applySpan(state.snap, days, date, date, state.add));
   };
@@ -97,12 +113,19 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
         press.current = null;
         begin(date); // quick tap toggles
       }
+      const state = drag.current;
       drag.current = null;
+      if (state) {
+        ignoreClickUntil.current = Date.now() + 1000;
+        // Safari and Firefox don't focus a button on click; this also moves focus to where a drag ended.
+        gridRef.current?.querySelector<HTMLElement>(`[data-date="${state.to}"]`)?.focus({ preventScroll: true });
+      }
     };
     const cancel = () => {
       if (press.current) clearTimeout(press.current.timer);
       press.current = null;
       drag.current = null;
+      ignoreClickUntil.current = 0;
     };
     const blockScroll = (e: TouchEvent) => {
       if (drag.current) e.preventDefault();
@@ -119,11 +142,12 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
   }, []);
 
   const onPointerDown = (e: PointerEvent) => {
+    ignoreClickUntil.current = 0;
     if (!editable) return;
     const date = dateOf(e.target as Element);
     if (!date || !selectable.has(date)) return;
     if ((e.pointerType || 'mouse') === 'mouse') {
-      e.preventDefault();
+      // No preventDefault: the browser focuses the day as mouse focus (no ring). .grid's user-select: none stops text selection.
       begin(date);
       return;
     }
@@ -151,6 +175,7 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
     const under = (typeof document.elementFromPoint === 'function' && document.elementFromPoint(e.clientX, e.clientY)) || (e.target as Element);
     const date = dateOf(under);
     if (date && latest.current.selectable.has(date)) {
+      state.to = date;
       latest.current.onChange(applySpan(state.snap, latest.current.selectableDays, state.from, date, state.add));
     }
   };
@@ -197,6 +222,7 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
                     aria-pressed={editable ? mine.has(c.iso) : undefined}
                     aria-disabled={!editable || past ? true : undefined}
                     onFocus={() => setFocusDate(c.iso)}
+                    onClick={onDayClick}
                   >
                     <span aria-hidden="true">{c.day}</span>
                     <small aria-hidden="true">{n ? copy.calendar.count(n, total) : ''}</small>

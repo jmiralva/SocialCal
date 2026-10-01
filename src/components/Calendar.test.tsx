@@ -197,4 +197,102 @@ describe('Calendar', () => {
     fireEvent.pointerUp(window);
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it('toggles on a bare click, which is how keyboards and screen readers activate', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    fireEvent.click(cell(container, '2026-10-10'));
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-10']);
+    expect(cell(container, '2026-10-10').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(cell(container, '2026-10-10'));
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it('ignores a bare click on past days and in read-only mode', () => {
+    const onChange = vi.fn();
+    const { container, unmount } = render(<Harness onChange={onChange} />);
+    fireEvent.click(cell(container, '2026-10-07'));
+    unmount();
+    const ro = render(<Harness editable={false} onChange={onChange} />);
+    fireEvent.click(cell(ro.container, '2026-10-10'));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('toggles once for a mouse press and its click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-10']);
+  });
+
+  it('toggles once for a touch tap and its click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'touch', clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window);
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-10']);
+  });
+
+  it('toggles once for a touch tap whose click arrives after a timer tick', async () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'touch', clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window);
+    await new Promise((r) => setTimeout(r, 0));
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('a drag that ends without a click does not swallow a screen reader click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    fireEvent.pointerDown(cell(container, '2026-10-09'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-12'), { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    fireEvent.click(cell(container, '2026-10-15')); // detail 0, like a screen reader
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-09', '2026-10-10', '2026-10-11', '2026-10-12', '2026-10-15']);
+  });
+
+  it('a cancelled touch press does not block the next click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'touch', clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window);
+    fireEvent.pointerCancel(window);
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it('focuses the day a drag ended on', () => {
+    const { container } = render(<Harness />);
+    fireEvent.pointerDown(cell(container, '2026-10-09'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-12'), { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    expect(focused()).toBe('2026-10-12');
+  });
+
+  it('keeps focus on the last selectable day when a drag ends over a past day', () => {
+    const { container } = render(<Harness />);
+    fireEvent.pointerDown(cell(container, '2026-10-10'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-09'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-08'), { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    expect(focused()).toBe('2026-10-09');
+  });
+
+  it('does not let a held Enter repeat the toggle', () => {
+    const { container } = render(<Harness />);
+    act(() => cell(container, '2026-10-10').focus());
+    expect(fireEvent.keyDown(cell(container, '2026-10-10'), { key: 'Enter', repeat: true })).toBe(false);
+  });
 });
