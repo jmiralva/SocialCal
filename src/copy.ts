@@ -64,12 +64,6 @@ export const copy = {
 
   calendar: {
     weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-    legendMine: 'Your days',
-    legendTally: 'One mark per person free',
-    legendNumber: 'People free that day',
-    legendBest: 'Most people free',
-    legendSelectable: 'Tap to mark',
-    legendOut: 'Outside the dates',
     // Screen reader label for a day button. `date` comes from formatDayLong.
     // `best` mirrors the red circle.
     dayLabel: (date: string, count: number, total: number, best = false) =>

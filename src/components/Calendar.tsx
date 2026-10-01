@@ -285,41 +285,6 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
           </section>
         ))}
       </div>
-      <div class="legend">
-        <span>
-          <i class="lg-hl" aria-hidden="true" />
-          {copy.calendar.legendMine}
-        </span>
-        <span>
-          {numbers ? (
-            // A sample count, hidden from screen readers, so it isn't copy.
-            <b class="lg-n" aria-hidden="true">5</b>
-          ) : (
-            <svg class="lg-tally" viewBox="0 0 22 16" aria-hidden="true">
-              <path d="M4 2 L4 14 M9 2 L9 14 M14 2 L14 14" />
-            </svg>
-          )}
-          {numbers ? copy.calendar.legendNumber : copy.calendar.legendTally}
-        </span>
-        {bestDays.size > 0 && (
-          <span>
-            <span class="lg-ring" aria-hidden="true">
-              <Circle seed="legend" />
-            </span>
-            {copy.calendar.legendBest}
-          </span>
-        )}
-        {editable && (
-          <span>
-            <i class="lg-in" aria-hidden="true" />
-            {copy.calendar.legendSelectable}
-          </span>
-        )}
-        <span>
-          <i class="lg-out" aria-hidden="true" />
-          {copy.calendar.legendOut}
-        </span>
-      </div>
     </div>
   );
 }
