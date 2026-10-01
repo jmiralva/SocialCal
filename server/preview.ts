@@ -3,7 +3,7 @@ import { ApiError } from './errors';
 import { loadEvent, toEventInfo } from './events';
 import type { EventInfo } from '../shared/types';
 
-// The link preview card for /e/:id. The join sheet says the same thing: keep in sync with copy.join in src/copy.ts.
+// The link preview card for /e/:id, generic wording first.
 const GENERIC_TITLE = 'SocialCal: find the day that works for everyone';
 const GENERIC_DESCRIPTION =
   'Make a calendar, share the link, and see which days work for the most people.';
@@ -20,6 +20,7 @@ export function formatRange(start: string, end: string): string {
   return `from ${fmt.format(utc(start))} – ${fmt.format(utc(end))}`;
 }
 
+// The wording here mirrors the join sheet: keep in sync with copy.join in src/copy.ts.
 export function previewTags(info: EventInfo | null, origin: string): PreviewTags {
   const image = `${origin}/og.png`;
   if (!info) return { title: GENERIC_TITLE, description: GENERIC_DESCRIPTION, image, url: null };
@@ -70,13 +71,15 @@ async function findEvent(env: PreviewEnv, path: string): Promise<EventInfo | nul
   }
 }
 
-// GET /e/:id. Any failure still serves the page, with the generic card; the app shows its own Not Found.
+// GET /e/:id. A failed lookup serves the page with the generic card; the app shows its own Not Found.
+// A failed asset fetch is passed through, or throws and the Function falls through to the static page.
 export async function handlePreview(request: Request, env: PreviewEnv): Promise<Response> {
   const url = new URL(request.url);
-  const tags = previewTags(await findEvent(env, url.pathname), url.origin);
   // A fresh request, never the browser's: a forwarded If-None-Match could come back as a bodyless 304.
   // Not /index.html, which Pages redirects to /.
-  const page = await env.ASSETS.fetch(new URL('/', url));
+  const [info, page] = await Promise.all([findEvent(env, url.pathname), env.ASSETS.fetch(new URL('/', url))]);
+  if (!page.ok) return page;
+  const tags = previewTags(info, url.origin);
   return new Response(rewriteHtml(page, tags).body, {
     status: 200,
     headers: {

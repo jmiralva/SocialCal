@@ -157,6 +157,15 @@ describe('handlePreview', () => {
     expect(String(assets.fetch.mock.calls[0][0])).toBe('https://socialcal.test/');
   });
 
+  it('passes a failed asset response through instead of dressing it up as the page', async () => {
+    const res = await handlePreview(new Request('https://socialcal.test/e/not-an-id'), {
+      ...env,
+      ASSETS: { fetch: vi.fn(async () => new Response('nope', { status: 500 })) },
+    });
+    expect(res.status).toBe(500);
+    expect(await res.text()).toBe('nope');
+  });
+
   it('accepts a trailing slash', async () => {
     const id = await createEvent();
     expect(await (await get(`/e/${id}/`)).text()).toContain('Help find a date for Fall camping trip');
