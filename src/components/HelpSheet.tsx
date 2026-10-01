@@ -38,7 +38,9 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
             {help.keyboard.rest}
           </li>
         )}
-        <li>{help.shading}</li>
+        <li>{help.highlight}</li>
+        <li>{help.marks}</li>
+        <li>{help.circle}</li>
         <li>
           <b>{help.bestDays.lead}</b>
           {help.bestDays.rest}

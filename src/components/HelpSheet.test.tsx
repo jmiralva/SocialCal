@@ -30,6 +30,14 @@ describe('HelpSheet', () => {
     expect(screen.queryByText('Use the arrow keys')).toBeNull();
   });
 
+  it('explains the highlight, the marks, and the circle', () => {
+    render(<HelpSheet onClose={vi.fn()} />);
+    expect(screen.getByText('Your days get a yellow highlight.')).toBeTruthy();
+    expect(screen.getByText(/Each mark on a day is one person who's free\. In groups of 10 or more/)).toBeTruthy();
+    expect(screen.getByText('The day with the most people free gets circled.')).toBeTruthy();
+    expect(screen.queryByText(/darker green/)).toBeNull();
+  });
+
   it('links to the author and the repo', () => {
     render(<HelpSheet onClose={vi.fn()} />);
     expect(screen.getByRole('link', { name: 'Jorge Mir Alvarez' }).getAttribute('href')).toBe('https://jmiralva.me');
