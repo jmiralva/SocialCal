@@ -29,6 +29,8 @@ test('creator and friend find the best days together', async ({ page, browser })
   await page.getByLabel('Your name').fill('Jorge');
   await page.getByRole('button', { name: 'Create calendar' }).click();
   await expect(page.getByRole('dialog', { name: 'Your calendar is ready' })).toBeVisible();
+  const editLink = (await page.locator('.copy-row code').nth(1).textContent())!;
+  expect(editLink).toMatch(/\/e\/[A-Za-z0-9]{22}#edit=[A-Za-z0-9]{22}$/);
   await page.getByRole('button', { name: 'Done' }).click();
   const eventPath = new URL(page.url()).pathname;
 
@@ -57,6 +59,23 @@ test('creator and friend find the best days together', async ({ page, browser })
   await day(friend, d3).click();
   await expect(friend.getByText('· 2 days')).toBeVisible();
   await friendSaved;
+
+  // Identity lives in an HttpOnly cookie, not localStorage
+  const deviceCookie = (await friendContext.cookies()).find((c) => c.name === 'sc_device');
+  expect(deviceCookie).toMatchObject({ httpOnly: true, sameSite: 'Lax' });
+  await friend.evaluate(() => localStorage.clear());
+  await friend.reload();
+  await expect(friend.getByText('Marking days for')).toBeVisible();
+  await expect(friend.getByText('· 2 days')).toBeVisible();
+
+  // The creator opens the edit link on a second device; both devices stay creator
+  const creator2Context = await browser.newContext({ ...devices['Pixel 7'], baseURL: 'http://localhost:8788' });
+  const creator2 = await creator2Context.newPage();
+  await creator2.goto(editLink);
+  await expect(creator2.getByRole('button', { name: 'Edit event' })).toBeVisible();
+  await expect(creator2.locator('b.you')).toHaveText('Jorge');
+  expect(new URL(creator2.url()).hash).toBe('');
+  await creator2Context.close();
 
   // Both see the same best days
   await friend.getByRole('tab', { name: 'Best days' }).click();
