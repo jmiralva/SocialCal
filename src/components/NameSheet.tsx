@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import { Sheet } from './Sheet';
 import { HelpLink } from './HelpLink';
 import { LIMITS, validatePersonName } from '../../shared/validate';
@@ -24,6 +24,7 @@ export function NameSheet({
   const [name, setName] = useState(initialName);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const field = useRef<HTMLInputElement>(null);
 
   const submit = async (e: Event) => {
     e.preventDefault();
@@ -40,7 +41,7 @@ export function NameSheet({
   };
 
   return (
-    <Sheet label={title}>
+    <Sheet label={title} onEscape={secondary.onClick} initialFocus={field}>
       <form onSubmit={submit} noValidate>
         <h2>{title}</h2>
         <p class="sheet-sub">{subtitle}</p>
@@ -50,7 +51,7 @@ export function NameSheet({
           <input
             value={name}
             maxLength={LIMITS.personName}
-            autoFocus
+            ref={field}
             autoComplete="given-name"
             onInput={(e) => setName(e.currentTarget.value)}
           />

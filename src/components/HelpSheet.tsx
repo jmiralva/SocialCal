@@ -5,7 +5,8 @@ import { isCoarsePointer } from '../lib/pointer';
 const { help } = copy;
 
 export function HelpSheet({ onClose }: { onClose: () => void }) {
-  const drag = isCoarsePointer() ? help.dragTouch : help.drag;
+  const coarse = isCoarsePointer();
+  const drag = coarse ? help.dragTouch : help.drag;
   return (
     <Sheet label={help.title} onClose={onClose}>
       <h2>{help.title}</h2>
@@ -31,6 +32,12 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
           <b>{drag.lead}</b>
           {drag.rest}
         </li>
+        {!coarse && (
+          <li>
+            <b>{help.keyboard.lead}</b>
+            {help.keyboard.rest}
+          </li>
+        )}
         <li>{help.shading}</li>
         <li>
           <b>{help.bestDays.lead}</b>

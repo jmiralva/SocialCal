@@ -1,19 +1,33 @@
-import { fireEvent, render } from '@testing-library/preact';
+import { act, fireEvent, render } from '@testing-library/preact';
 import { useState } from 'preact/hooks';
 import { describe, expect, it, vi } from 'vitest';
 import { Calendar } from './Calendar';
 import { monthGrids, rangeDays } from '../../shared/dates';
 
-function Harness({ initial = [], editable = true, weekStart, onChange = () => {} }: { initial?: string[]; editable?: boolean; weekStart?: number; onChange?: (d: string[]) => void }) {
+function Harness({
+  initial = [],
+  editable = true,
+  weekStart,
+  range = ['2026-10-07', '2026-10-20'],
+  selectable = rangeDays('2026-10-09', range[1]), // days before Oct 9 are "past"
+  onChange = () => {},
+}: {
+  initial?: string[];
+  editable?: boolean;
+  weekStart?: number;
+  range?: [string, string];
+  selectable?: string[];
+  onChange?: (d: string[]) => void;
+}) {
   const [mine, setMine] = useState(new Set(initial));
   return (
     <Calendar
-      months={monthGrids('2026-10-07', '2026-10-20', weekStart)}
+      months={monthGrids(range[0], range[1], weekStart)}
       weekStart={weekStart}
       counts={new Map([['2026-10-09', 2]])}
       total={3}
       mine={mine}
-      selectableDays={rangeDays('2026-10-09', '2026-10-20')} // Oct 7-8 are "past"
+      selectableDays={selectable}
       editable={editable}
       onChange={(next) => {
         setMine(next);
@@ -22,6 +36,9 @@ function Harness({ initial = [], editable = true, weekStart, onChange = () => {}
     />
   );
 }
+
+const focused = () => (document.activeElement as HTMLElement | null)?.dataset.date;
+const press = (key: string) => fireEvent.keyDown(document.activeElement!, { key });
 
 const cell = (c: Element, iso: string) => c.querySelector(`[data-date="${iso}"]`) as HTMLElement;
 
@@ -37,6 +54,99 @@ describe('Calendar', () => {
     // Each month: heading, then weekday row, then grid
     const month = container.querySelector('.month')!;
     expect([...month.children].map((el) => el.tagName === 'H3' ? 'h3' : el.className)).toEqual(['h3', 'dow-row', 'grid']);
+  });
+
+  it('renders in-range days as labelled buttons', () => {
+    const { container } = render(<Harness />);
+    const d9 = cell(container, '2026-10-09');
+    expect(d9.tagName).toBe('BUTTON');
+    expect(d9.getAttribute('type')).toBe('button');
+    expect(d9.getAttribute('aria-label')).toBe('Friday, October 9, 2 of 3 people free');
+    expect(cell(container, '2026-10-10').getAttribute('aria-label')).toBe('Saturday, October 10, nobody free yet');
+    expect(container.querySelector('.day.is-out')!.tagName).toBe('DIV');
+    expect(container.querySelector('.day.is-out')!.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('marks pressed and unavailable days for screen readers', () => {
+    const { container, unmount } = render(<Harness initial={['2026-10-08', '2026-10-10']} />);
+    expect(cell(container, '2026-10-10').getAttribute('aria-pressed')).toBe('true');
+    expect(cell(container, '2026-10-11').getAttribute('aria-pressed')).toBe('false');
+    expect(cell(container, '2026-10-11').getAttribute('aria-disabled')).toBeNull();
+    // A marked past day is still pressed, and unavailable
+    expect(cell(container, '2026-10-08').getAttribute('aria-pressed')).toBe('true');
+    expect(cell(container, '2026-10-08').getAttribute('aria-disabled')).toBe('true');
+    unmount();
+    const ro = render(<Harness editable={false} initial={['2026-10-10']} />);
+    expect(cell(ro.container, '2026-10-10').getAttribute('aria-pressed')).toBeNull();
+    expect(cell(ro.container, '2026-10-10').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('has one Tab stop, on the first selectable day', () => {
+    const { container } = render(<Harness />);
+    const stops = container.querySelectorAll('[tabindex="0"]');
+    expect(stops).toHaveLength(1);
+    expect((stops[0] as HTMLElement).dataset.date).toBe('2026-10-09');
+  });
+
+  it('keeps a Tab stop when every day is past', () => {
+    const { container } = render(<Harness selectable={[]} />);
+    const stops = container.querySelectorAll('[tabindex="0"]');
+    expect(stops).toHaveLength(1);
+    expect((stops[0] as HTMLElement).dataset.date).toBe('2026-10-07');
+  });
+
+  it('moves focus by day and week with the arrow keys', () => {
+    const { container } = render(<Harness />);
+    act(() => cell(container, '2026-10-09').focus());
+    press('ArrowRight');
+    expect(focused()).toBe('2026-10-10');
+    press('ArrowDown');
+    expect(focused()).toBe('2026-10-17');
+    press('ArrowUp');
+    expect(focused()).toBe('2026-10-10');
+    press('ArrowLeft');
+    expect(focused()).toBe('2026-10-09');
+    expect(cell(container, '2026-10-09').getAttribute('tabindex')).toBe('0');
+    expect(cell(container, '2026-10-10').getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('stops at the range edges and still blocks page scrolling', () => {
+    const { container } = render(<Harness />);
+    act(() => cell(container, '2026-10-20').focus());
+    expect(press('ArrowDown')).toBe(false); // false = default prevented
+    expect(focused()).toBe('2026-10-20');
+    press('Home');
+    expect(focused()).toBe('2026-10-07');
+    press('ArrowUp');
+    expect(focused()).toBe('2026-10-07');
+    press('End');
+    expect(focused()).toBe('2026-10-20');
+  });
+
+  it('moves across months', () => {
+    const { container } = render(<Harness range={['2026-10-25', '2026-11-05']} selectable={rangeDays('2026-10-25', '2026-11-05')} />);
+    act(() => cell(container, '2026-10-31').focus());
+    press('ArrowRight');
+    expect(focused()).toBe('2026-11-01');
+    press('ArrowUp');
+    expect(focused()).toBe('2026-10-25');
+  });
+
+  it('falls back to a Tab stop that exists when the range shrinks', () => {
+    const { container, rerender } = render(<Harness range={['2026-10-07', '2026-10-20']} />);
+    act(() => cell(container, '2026-10-20').focus());
+    rerender(<Harness range={['2026-10-07', '2026-10-15']} />);
+    const stops = container.querySelectorAll('[tabindex="0"]');
+    expect(stops).toHaveLength(1);
+    expect((stops[0] as HTMLElement).dataset.date).toBe('2026-10-09');
+  });
+
+  it('leaves other keys and modified arrows alone', () => {
+    const { container } = render(<Harness />);
+    act(() => cell(container, '2026-10-09').focus());
+    expect(press('a')).toBe(true);
+    expect(fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft', altKey: true })).toBe(true);
+    expect(focused()).toBe('2026-10-09');
   });
 
   it('starts the week on the given day', () => {
@@ -87,5 +197,103 @@ describe('Calendar', () => {
     fireEvent.pointerDown(cell(ro.container, '2026-10-10'), { pointerType: 'mouse' });
     fireEvent.pointerUp(window);
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('toggles on a bare click, which is how keyboards and screen readers activate', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    fireEvent.click(cell(container, '2026-10-10'));
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-10']);
+    expect(cell(container, '2026-10-10').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(cell(container, '2026-10-10'));
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it('ignores a bare click on past days and in read-only mode', () => {
+    const onChange = vi.fn();
+    const { container, unmount } = render(<Harness onChange={onChange} />);
+    fireEvent.click(cell(container, '2026-10-07'));
+    unmount();
+    const ro = render(<Harness editable={false} onChange={onChange} />);
+    fireEvent.click(cell(ro.container, '2026-10-10'));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('toggles once for a mouse press and its click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-10']);
+  });
+
+  it('toggles once for a touch tap and its click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'touch', clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window);
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-10']);
+  });
+
+  it('toggles once for a touch tap whose click arrives after a timer tick', async () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'touch', clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window);
+    await new Promise((r) => setTimeout(r, 0));
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('a drag that ends without a click does not swallow a screen reader click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    fireEvent.pointerDown(cell(container, '2026-10-09'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-12'), { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    fireEvent.click(cell(container, '2026-10-15')); // detail 0, like a screen reader
+    expect(onChange).toHaveBeenLastCalledWith(['2026-10-09', '2026-10-10', '2026-10-11', '2026-10-12', '2026-10-15']);
+  });
+
+  it('a cancelled touch press does not block the next click', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Harness onChange={onChange} />);
+    const d10 = cell(container, '2026-10-10');
+    fireEvent.pointerDown(d10, { pointerType: 'touch', clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window);
+    fireEvent.pointerCancel(window);
+    fireEvent.click(d10, { detail: 1 });
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it('focuses the day a drag ended on', () => {
+    const { container } = render(<Harness />);
+    fireEvent.pointerDown(cell(container, '2026-10-09'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-12'), { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    expect(focused()).toBe('2026-10-12');
+  });
+
+  it('keeps focus on the last selectable day when a drag ends over a past day', () => {
+    const { container } = render(<Harness />);
+    fireEvent.pointerDown(cell(container, '2026-10-10'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-09'), { pointerType: 'mouse' });
+    fireEvent.pointerMove(cell(container, '2026-10-08'), { pointerType: 'mouse' });
+    fireEvent.pointerUp(window);
+    expect(focused()).toBe('2026-10-09');
+  });
+
+  it('does not let a held Enter repeat the toggle', () => {
+    const { container } = render(<Harness />);
+    act(() => cell(container, '2026-10-10').focus());
+    expect(fireEvent.keyDown(cell(container, '2026-10-10'), { key: 'Enter', repeat: true })).toBe(false);
   });
 });

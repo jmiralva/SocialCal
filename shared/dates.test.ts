@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addDays, daysInclusive, formatDay, monthGrids, rangeDays, todayLocalISO } from './dates';
+import { addDays, daysInclusive, formatDay, formatDayLong, monthGrids, rangeDays, todayLocalISO } from './dates';
 
 describe('dates', () => {
   it('adds days across month boundaries', () => {
@@ -23,6 +23,11 @@ describe('dates', () => {
 
   it('formats a day as weekday, month, day', () => {
     expect(formatDay('2026-10-24')).toBe('Sat, Oct 24');
+  });
+
+  it('formats a day with the full weekday and month, without shifting it', () => {
+    expect(formatDayLong('2026-10-11')).toBe('Sunday, October 11');
+    expect(formatDayLong('2026-11-01')).toBe('Sunday, November 1');
   });
 
   it('builds month grids with leading blanks and range flags', () => {

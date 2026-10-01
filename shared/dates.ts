@@ -32,6 +32,13 @@ export function formatDay(iso: string): string {
   });
 }
 
+// Cached: the calendar formats every day on every render, including on each pointer move during a drag.
+const LONG_DAY = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+export function formatDayLong(iso: string): string {
+  return LONG_DAY.format(new Date(toUTC(iso)));
+}
+
 export type MonthCell = { iso: string; day: number; inRange: boolean };
 export type MonthGrid = { key: string; label: string; cells: (MonthCell | null)[] };
 

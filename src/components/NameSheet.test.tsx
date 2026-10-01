@@ -24,4 +24,18 @@ describe('NameSheet', () => {
     expect(onHelp).toHaveBeenCalledOnce();
     expect(p.onSubmit).not.toHaveBeenCalled();
   });
+
+  it('focuses the name field on a fine pointer', () => {
+    render(<NameSheet {...props()} />);
+    expect(document.activeElement).toBe(screen.getByLabelText('Your name'));
+  });
+
+  it('takes Escape as the secondary action but ignores overlay clicks', () => {
+    const p = props();
+    const { container } = render(<NameSheet {...p} />);
+    fireEvent.click(container.querySelector('.overlay')!);
+    expect(p.secondary.onClick).not.toHaveBeenCalled();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(p.secondary.onClick).toHaveBeenCalledOnce();
+  });
 });

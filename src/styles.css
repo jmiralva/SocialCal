@@ -61,6 +61,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; touch-action: pan-y; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
 .day { height: 44px; border-radius: 6px; background: var(--soft); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-weight: 700; font-size: 13px; cursor: pointer; }
 .day small { font-size: 9px; font-weight: 500; opacity: 0.75; line-height: 1; min-height: 9px; }
+/* Days are buttons for keyboards and screen readers; reset the browser's button look so they match the old divs. */
+button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit; line-height: inherit; color: inherit; -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; }
 .day.lvl-1 { background: color-mix(in srgb, var(--g1) 60%, var(--soft)); }
 .day.lvl-2 { background: color-mix(in srgb, var(--g2) 60%, var(--soft)); }
 .day.lvl-3 { background: color-mix(in srgb, var(--g3) 60%, var(--soft)); }
@@ -103,6 +105,17 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); z-index: 5; }
 .tabbar button { flex: 1; border: 0; background: none; padding: 12px 0 14px; font-weight: 700; font-size: 13px; color: var(--muted); cursor: pointer; }
 .tabbar button[aria-selected='true'] { color: var(--ink); box-shadow: inset 0 2px 0 var(--ink); }
+/* Keyboard focus only, and not on text fields, which keep the browser's own focus look. data-input (src/lib/inputModality.ts) covers Safari, which hides :focus-visible when arrow keys move focus after a click. */
+:where(button, a[href], [tabindex]):focus-visible,
+:where(html[data-input='keyboard']) :where(button, a[href], [tabindex]):focus { outline: 2px solid var(--ink); outline-offset: 2px; }
+.day:focus { outline-offset: 1px; }
+.tabbar button:focus { outline-offset: -2px; }
+.sheet:focus { outline: none; }
+
+/* Phones: keep a day focused by arrow keys clear of the sticky top bar and the fixed tab bar. */
+@media (max-width: 899px) {
+  html:has(.tabbar) { scroll-padding-top: var(--topbar-h, 0px); scroll-padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+}
 .page[data-tab='all'] .pane-best { display: none; }
 .page[data-tab='best'] .pane-all, .page[data-tab='best'] .description { display: none; }
 
