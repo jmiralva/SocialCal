@@ -13,28 +13,26 @@
       .frame {
         width: 1200px; height: 630px; background: #ECEFF5;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center;
         font-family: 'Recursive', sans-serif;
       }
-      .lockup { display: flex; align-items: center; gap: 28px; }
-      .lockup img { width: 150px; height: 150px; }
+      .frame img { width: 170px; height: 170px; }
       .wordmark {
-        font-size: 150px; line-height: 1; font-weight: 800; color: #2443B8; letter-spacing: -0.01em;
+        margin-top: 22px; font-size: 104px; line-height: 1; font-weight: 800; color: #2443B8; letter-spacing: -0.01em;
         font-variation-settings: "CASL" 1, "MONO" 0, "CRSV" 1;
       }
       .tagline {
-        margin-top: 36px; font-size: 40px; font-weight: 500; color: #5E6578;
+        margin-top: 26px; font-size: 34px; line-height: 1.25; font-weight: 500; color: #5E6578;
         font-variation-settings: "CASL" 0, "MONO" 0, "CRSV" 0.5;
       }
     </style>
   </head>
   <body>
     <div class="frame">
-      <div class="lockup">
-        <!-- An <img>, not inline markup: the SVG's own <style> uses global class names. -->
-        <img src="../public/favicon.svg" alt="" />
-        <div class="wordmark">SocialCal</div>
-      </div>
-      <div class="tagline">Find the day that works for everyone</div>
+      <!-- An <img>, not inline markup: the SVG's own <style> uses global class names. -->
+      <img src="../public/favicon.svg" alt="" />
+      <div class="wordmark">SocialCal</div>
+      <div class="tagline">Find the day that<br />works for everyone</div>
     </div>
   </body>
 </html>
