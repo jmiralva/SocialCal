@@ -15,7 +15,8 @@
     "db:migrate:local": "wrangler d1 migrations apply socialcal --local",
     "db:migrate:remote": "wrangler d1 migrations apply socialcal --remote",
     "db:migrate:preview": "wrangler d1 migrations apply socialcal-preview --remote --env preview",
-    "deploy": "npm run build && wrangler pages deploy"
+    "deploy": "npm run build && wrangler pages deploy",
+    "og:image": "node scripts/og-image.mjs"
   },
   "dependencies": {
     "preact": "^10.29.8"

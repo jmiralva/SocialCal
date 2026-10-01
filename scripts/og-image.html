@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Source for public/og.png. Rebuild with `npm run og:image`. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL,CRSV,MONO@300..1000,0..1,0..1,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Light theme values of --paper, --ink and --muted from the :root token block in src/styles.css. */
+      html, body { margin: 0; }
+      .frame {
+        width: 1200px; height: 630px; background: #ECEFF5;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        font-family: 'Recursive', sans-serif;
+      }
+      .lockup { display: flex; align-items: center; gap: 28px; }
+      .lockup img { width: 150px; height: 150px; }
+      .wordmark {
+        font-size: 150px; line-height: 1; font-weight: 800; color: #2443B8; letter-spacing: -0.01em;
+        font-variation-settings: "CASL" 1, "MONO" 0, "CRSV" 1;
+      }
+      .tagline {
+        margin-top: 36px; font-size: 40px; font-weight: 500; color: #5E6578;
+        font-variation-settings: "CASL" 0, "MONO" 0, "CRSV" 0.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <div class="lockup">
+        <!-- An <img>, not inline markup: the SVG's own <style> uses global class names. -->
+        <img src="../public/favicon.svg" alt="" />
+        <div class="wordmark">SocialCal</div>
+      </div>
+      <div class="tagline">Find the day that works for everyone</div>
+    </div>
+  </body>
+</html>
