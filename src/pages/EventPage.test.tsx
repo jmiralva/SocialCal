@@ -59,6 +59,16 @@ describe('EventPage', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('finishes claiming the creator on reload when only the edit key was saved', async () => {
+    saveIdentity(ID, { editKey: 'K'.repeat(22) });
+    vi.mocked(api.getEvent).mockResolvedValue(payload);
+    vi.mocked(api.claimCreator).mockResolvedValue({ participantId: 'J', token: 'T'.repeat(22) });
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    expect(await screen.findByText('Jorge', { selector: 'b.you' })).toBeTruthy();
+    expect(api.claimCreator).toHaveBeenCalledWith(ID, 'K'.repeat(22));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   it('renders not found for unknown events', async () => {
     vi.mocked(api.getEvent).mockRejectedValue(new ApiRequestError(404, 'event_not_found', "This calendar doesn't exist."));
     render(<EventPage eventId={ID} navigate={vi.fn()} />);

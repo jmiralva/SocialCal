@@ -22,6 +22,14 @@ import { NotFound } from './NotFound';
 const CANT_EDIT = "This browser can't edit this event. Use your private edit link.";
 const OFFLINE = "Couldn't save. Check your connection and try again.";
 
+// An edit key to claim: from the edit link's hash, or one saved earlier whose claim never completed (e.g. a network failure).
+const pendingEditKey = (eventId: string): string | null => {
+  const fromHash = readEditKeyFromHash(location.hash);
+  if (fromHash) return fromHash;
+  const saved = loadIdentity(eventId);
+  return saved.editKey && !(saved.participantId && saved.token) ? saved.editKey : null;
+};
+
 const errorMessage = (e: unknown) =>
   e instanceof ApiRequestError && e.status >= 400 && e.status < 500 ? e.message : OFFLINE;
 
@@ -34,7 +42,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
   const [localDates, setLocalDates] = useState<string[] | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaverStatus>('idle');
   const [toast, setToast] = useState<string | null>(null);
-  const [claiming, setClaiming] = useState(() => readEditKeyFromHash(location.hash) !== null);
+  const [claiming, setClaiming] = useState(() => pendingEditKey(eventId) !== null);
 
   useEffect(() => {
     const meta = document.createElement('meta');
@@ -45,9 +53,9 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
   }, []);
 
   useEffect(() => {
-    const key = readEditKeyFromHash(location.hash);
+    const key = pendingEditKey(eventId);
     if (!key) return;
-    history.replaceState(null, '', location.pathname);
+    if (location.hash) history.replaceState(null, '', location.pathname);
     api
       .claimCreator(eventId, key)
       .then((r) => setIdentity(saveIdentity(eventId, { editKey: key, participantId: r.participantId, token: r.token })))
