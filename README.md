@@ -1,5 +1,7 @@
 # SocialCal
 
+![SocialCal: Find the day that works for everyone](public/og.png)
+
 Find the best days to meet up with friends. Create a calendar, share the link, and see which dates work for the most people.
 
 Free, with no sign-up or accounts. Try it at [socialcal-arx.pages.dev](https://socialcal-arx.pages.dev/).
