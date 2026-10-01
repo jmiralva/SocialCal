@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { Sheet } from './Sheet';
+import { HelpLink } from './HelpLink';
 import { LIMITS, validatePersonName } from '../../shared/validate';
 
 export function NameSheet({
@@ -9,6 +10,7 @@ export function NameSheet({
   initialName = '',
   onSubmit,
   secondary,
+  onHelp,
 }: {
   title: string;
   subtitle: string;
@@ -16,6 +18,7 @@ export function NameSheet({
   initialName?: string;
   onSubmit: (name: string) => Promise<string | null>;
   secondary: { label: string; onClick: () => void };
+  onHelp?: () => void;
 }) {
   const [name, setName] = useState(initialName);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +43,7 @@ export function NameSheet({
       <form onSubmit={submit} noValidate>
         <h2>{title}</h2>
         <p class="sheet-sub">{subtitle}</p>
+        {onHelp && <HelpLink onClick={onHelp} />}
         <label class="field">
           <span>Your name</span>
           <input
