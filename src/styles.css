@@ -27,13 +27,17 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .btn { background: var(--ink); color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 14px; cursor: pointer; white-space: nowrap; }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn-new { background: var(--g1); color: #376f18; }
+.btn-share { background: var(--g5); }
 .btn-block { width: 100%; padding: 12px; }
 .linklike { background: none; border: 0; padding: 0; color: var(--ink-2); text-decoration: underline; cursor: pointer; font-size: inherit; }
 .linklike.block { display: block; margin: 12px auto 0; font-size: 13px; color: var(--muted); }
 
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 6px; max-width: 1200px; margin: 0 auto; }
 .wordmark { font: 700 17px var(--font-display); color: var(--ink); text-decoration: none; }
-.topbar-actions { display: flex; gap: 8px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.help-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ink-2); cursor: pointer; }
+.help-icon-btn:hover { color: var(--ink); }
 
 .page { min-height: 100dvh; padding-bottom: 72px; }
 .layout { max-width: 1200px; margin: 0 auto; }

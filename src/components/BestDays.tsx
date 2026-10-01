@@ -26,7 +26,7 @@ export function BestDays({
       <div class="empty">
         <h3>Nobody else yet</h3>
         <p>Best days show up once friends add their availability.</p>
-        <button type="button" class="btn" onClick={onShare}>
+        <button type="button" class="btn btn-share" onClick={onShare}>
           Share the link
         </button>
       </div>
@@ -47,7 +47,7 @@ export function BestDays({
               Edit dates
             </button>
           ) : (
-            <button type="button" class="btn" onClick={onShare}>
+            <button type="button" class="btn btn-share" onClick={onShare}>
               Share the link
             </button>
           )}

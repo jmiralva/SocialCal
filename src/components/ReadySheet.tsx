@@ -18,7 +18,7 @@ export function ReadySheet({ shareUrl, editUrl, onClose }: { shareUrl: string; e
       <p class="copy-label">Share link</p>
       <div class="copy-row">
         <code>{shareUrl}</code>
-        <button type="button" class="btn" onClick={() => copy('share', shareUrl)}>
+        <button type="button" class="btn btn-share" onClick={() => copy('share', shareUrl)}>
           {copied === 'share' ? 'Copied' : 'Copy'}
         </button>
       </div>

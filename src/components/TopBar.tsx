@@ -1,4 +1,16 @@
-export function TopBar({ onNew, onShare, showNew = true }: { onNew: () => void; onShare?: () => void; showNew?: boolean }) {
+import { HelpIcon } from './HelpIcon';
+
+export function TopBar({
+  onNew,
+  onShare,
+  onHelp,
+  showNew = true,
+}: {
+  onNew: () => void;
+  onShare?: () => void;
+  onHelp?: () => void;
+  showNew?: boolean;
+}) {
   return (
     <header class="topbar">
       <a
@@ -12,13 +24,18 @@ export function TopBar({ onNew, onShare, showNew = true }: { onNew: () => void; 
         socialcal
       </a>
       <div class="topbar-actions">
+        {onHelp && (
+          <button type="button" class="help-icon-btn" aria-label="How socialcal works" onClick={onHelp}>
+            <HelpIcon size={26} />
+          </button>
+        )}
         {showNew && (
-          <button type="button" class="btn btn-ghost" onClick={onNew}>
+          <button type="button" class="btn btn-new" onClick={onNew}>
             New
           </button>
         )}
         {onShare && (
-          <button type="button" class="btn" onClick={onShare}>
+          <button type="button" class="btn btn-share" onClick={onShare}>
             Share
           </button>
         )}

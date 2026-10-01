@@ -19,6 +19,16 @@ const renderBest = (result: BestResult, isCreator = false) => {
 };
 
 describe('BestDays', () => {
+  it('styles the share buttons green', () => {
+    renderBest({ kind: 'not-enough-people' });
+    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn btn-share');
+  });
+
+  it('styles the no-majority share button green for non-creators', () => {
+    renderBest({ kind: 'no-majority', max: 1, total: 4, closest: [] });
+    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn btn-share');
+  });
+
   it('uses singular labels for one day each', () => {
     renderBest({ kind: 'ok', total: 4, top: [score('2026-11-07', ['j', 'm', 's'])], next: [score('2026-10-09', ['m', 's'])] });
     expect(screen.getByText('Best day')).toBeTruthy();
