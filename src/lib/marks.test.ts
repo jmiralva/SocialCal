@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isNumberMode, tally } from './marks';
+import { circlePath, isNumberMode, tally } from './marks';
 
 const count = (s: string, ch: string) => s.split(ch).length - 1;
 
@@ -33,5 +33,18 @@ describe('isNumberMode', () => {
   it('switches at 10 people', () => {
     expect(isNumberMode(9)).toBe(false);
     expect(isNumberMode(10)).toBe(true);
+  });
+});
+
+describe('circlePath', () => {
+  it('is stable per seed and differs between seeds', () => {
+    expect(circlePath('2026-10-17')).toBe(circlePath('2026-10-17'));
+    expect(circlePath('2026-10-17')).not.toBe(circlePath('2026-10-18'));
+  });
+
+  it('stays inside its box, wider for a wider aspect', () => {
+    const xs = (d: string) => [...d.matchAll(/(-?\d+\.\d)\s(-?\d+\.\d)/g)].map((m) => Number(m[1]));
+    expect(Math.max(...xs(circlePath('a')))).toBeLessThanOrEqual(100);
+    expect(Math.max(...xs(circlePath('a', 2.6)))).toBeGreaterThan(200);
   });
 });

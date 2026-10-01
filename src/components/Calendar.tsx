@@ -3,6 +3,7 @@ import { addDays, formatDayLong, type MonthGrid } from '../../shared/dates';
 import { applySpan } from '../lib/selection';
 import { isNumberMode, tally } from '../lib/marks';
 import { copy } from '../copy';
+import { Circle } from './Circle';
 
 type CalendarProps = {
   months: MonthGrid[];
@@ -11,10 +12,13 @@ type CalendarProps = {
   mine: ReadonlySet<string>;
   selectableDays: string[];
   editable: boolean;
+  bestDays?: ReadonlySet<string>; // days tied for best (computeBest kind 'ok'); circled
+  newBestDays?: ReadonlySet<string>; // best days that just appeared; their circle draws in
   weekStart?: number; // 0 = Sunday ... 6 = Saturday
   onChange: (next: Set<string>) => void;
 };
 
+const NO_DAYS: ReadonlySet<string> = new Set();
 const LONG_PRESS_MS = 280;
 const MOVE_TOLERANCE_PX = 8;
 
@@ -32,7 +36,7 @@ function WeekdayRow({ weekStart }: { weekStart: number }) {
   );
 }
 
-export function Calendar({ months, counts, total, mine, selectableDays, editable, weekStart = 0, onChange }: CalendarProps) {
+export function Calendar({ months, counts, total, mine, selectableDays, editable, bestDays = NO_DAYS, newBestDays = NO_DAYS, weekStart = 0, onChange }: CalendarProps) {
   const selectable = useMemo(() => new Set(selectableDays), [selectableDays]);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -239,6 +243,7 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
                   );
                 }
                 const n = counts.get(c.iso) ?? 0;
+                const isBest = bestDays.has(c.iso);
                 const past = !selectable.has(c.iso);
                 const shaded = numbers && n > 0 && !past;
                 const t = numbers ? null : tally(n, c.iso);
@@ -253,14 +258,17 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
                     style={shaded ? `--share: ${(n / total).toFixed(3)}` : undefined}
                     data-date={c.iso}
                     tabIndex={c.iso === tabStop ? 0 : -1}
-                    aria-label={copy.calendar.dayLabel(formatDayLong(c.iso), n, total)}
+                    aria-label={copy.calendar.dayLabel(formatDayLong(c.iso), n, total, isBest)}
                     aria-pressed={editable ? mine.has(c.iso) : undefined}
                     aria-disabled={!editable || past ? true : undefined}
                     onFocus={() => setFocusDate(c.iso)}
                     onClick={onDayClick}
                   >
                     <i class="hl" aria-hidden="true" />
-                    <span class="num" aria-hidden="true">{c.day}</span>
+                    <span class="num" aria-hidden="true">
+                      {c.day}
+                      {isBest && <Circle seed={c.iso} draw={newBestDays.has(c.iso)} />}
+                    </span>
                     <span class="mark" aria-hidden="true">
                       {numbers
                         ? n > 0 && <span class="n">{n}</span>
@@ -293,6 +301,14 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
           )}
           {numbers ? copy.calendar.legendNumber : copy.calendar.legendTally}
         </span>
+        {bestDays.size > 0 && (
+          <span>
+            <span class="lg-ring" aria-hidden="true">
+              <Circle seed="legend" />
+            </span>
+            {copy.calendar.legendBest}
+          </span>
+        )}
         {editable && (
           <span>
             <i class="lg-in" aria-hidden="true" />

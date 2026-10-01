@@ -50,3 +50,32 @@ export function tally(count: number, seed: string): Tally | null {
   tallies.set(key, result);
   return result;
 }
+
+const circles = new Map<string, string>();
+
+// A loose loop that overshoots its start, like a quick pen circle. aspect = box width / height.
+export function circlePath(seed: string, aspect = 1): string {
+  const key = `${seed}|${aspect}`;
+  const hit = circles.get(key);
+  if (hit) return hit;
+  const r = rng(hash(`ring${seed}`));
+  const w = 100 * aspect;
+  const h = 100;
+  const start = -2.2 + (r() - 0.5) * 0.4;
+  const sweep = Math.PI * 2 + 0.55;
+  const steps = 28;
+  const pts: [number, number][] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = start + (sweep * i) / steps;
+    const wobble = 1 + (r() - 0.5) * 0.05 + (i / steps) * 0.06;
+    pts.push([w / 2 + Math.cos(t) * (w / 2 - 5) * wobble, h / 2 + Math.sin(t) * (h / 2 - 6) * wobble]);
+  }
+  let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx = (pts[i][0] + pts[i + 1][0]) / 2;
+    const my = (pts[i][1] + pts[i + 1][1]) / 2;
+    d += ` Q${f(pts[i][0])} ${f(pts[i][1])} ${f(mx)} ${f(my)}`;
+  }
+  circles.set(key, d);
+  return d;
+}

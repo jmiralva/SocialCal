@@ -7,6 +7,12 @@ describe('copy.calendar.dayLabel', () => {
     expect(copy.calendar.dayLabel('Sunday, October 11', 1, 1)).toBe('Sunday, October 11, 1 of 1 person free');
   });
 
+  it('adds a best-day suffix only when asked', () => {
+    expect(copy.calendar.dayLabel('Saturday, October 17', 7, 8, true)).toBe('Saturday, October 17, 7 of 8 people free, best day');
+    expect(copy.calendar.dayLabel('Saturday, October 17', 7, 8, false)).toBe('Saturday, October 17, 7 of 8 people free');
+    expect(copy.calendar.dayLabel('Saturday, October 17', 7, 8)).toBe('Saturday, October 17, 7 of 8 people free');
+  });
+
   it('says nobody is free when the count or the total is zero', () => {
     expect(copy.calendar.dayLabel('Sunday, October 11', 0, 4)).toBe('Sunday, October 11, nobody free yet');
     expect(copy.calendar.dayLabel('Sunday, October 11', 0, 0)).toBe('Sunday, October 11, nobody free yet');

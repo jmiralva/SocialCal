@@ -38,6 +38,44 @@ beforeEach(() => {
 afterEach(() => history.replaceState(null, '', '/'));
 
 describe('EventPage', () => {
+  it('circles the best day once two people share it, without drawing it on load', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(
+      withMe(CREATOR, {
+        participants: [
+          { id: 'J', name: 'Jorge', dates: ['2030-10-10'] },
+          { id: 'M', name: 'Maya', dates: ['2030-10-10'] },
+        ],
+      }),
+    );
+    const { container } = render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByText('Jorge', { selector: 'b.you' });
+    const day = container.querySelector('[data-date="2030-10-10"]')!;
+    expect(day.querySelector('.ring')).toBeTruthy();
+    expect(day.querySelector('.ring.draw')).toBeNull();
+    expect(container.querySelector('[data-date="2030-10-11"] .ring')).toBeNull();
+  });
+
+  it('draws the circle when marking a day makes it the best', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(
+      withMe(CREATOR, {
+        participants: [
+          { id: 'J', name: 'Jorge', dates: ['2030-10-10'] },
+          { id: 'M', name: 'Maya', dates: ['2030-10-10', '2030-10-11'] },
+        ],
+      }),
+    );
+    vi.mocked(api.updatePerson).mockImplementation(never);
+    const { container } = render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByText('Jorge', { selector: 'b.you' });
+    expect(container.querySelector('[data-date="2030-10-11"] .ring')).toBeNull();
+    // Let Preact run the page's pending passive effects (they wait a frame). Otherwise its "new identity: drop unsaved
+    // dates" reset runs after the click and wipes the local marks.
+    await act(() => new Promise((r) => setTimeout(r, 120)));
+    fireEvent.click(container.querySelector('[data-date="2030-10-11"]')!, { detail: 0 }); // mark Oct 11 (keyboard-style click)
+    expect(container.querySelector('[data-date="2030-10-11"] .ring.draw')).toBeTruthy();
+    expect(container.querySelector('[data-date="2030-10-10"] .ring.draw')).toBeNull();
+  });
+
   it('browses on Escape from the name sheet', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);

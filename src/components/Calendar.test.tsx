@@ -12,6 +12,8 @@ function Harness({
   selectable = rangeDays('2026-10-09', range[1]), // days before Oct 9 are "past"
   total = 3,
   counts = new Map([['2026-10-09', 2]]),
+  bestDays,
+  newBestDays,
   onChange = () => {},
 }: {
   initial?: string[];
@@ -21,6 +23,8 @@ function Harness({
   selectable?: string[];
   total?: number;
   counts?: Map<string, number>;
+  bestDays?: ReadonlySet<string>;
+  newBestDays?: ReadonlySet<string>;
   onChange?: (d: string[]) => void;
 }) {
   const [mine, setMine] = useState(new Set(initial));
@@ -31,6 +35,8 @@ function Harness({
       counts={counts}
       total={total}
       mine={mine}
+      bestDays={bestDays}
+      newBestDays={newBestDays}
       selectableDays={selectable}
       editable={editable}
       onChange={(next) => {
@@ -47,6 +53,22 @@ const press = (key: string) => fireEvent.keyDown(document.activeElement!, { key 
 const cell = (c: Element, iso: string) => c.querySelector(`[data-date="${iso}"]`) as HTMLElement;
 
 describe('Calendar', () => {
+  it('circles best days, draws only new ones, and says so to screen readers', () => {
+    const { container } = render(<Harness bestDays={new Set(['2026-10-09', '2026-10-10'])} newBestDays={new Set(['2026-10-10'])} />);
+    expect(cell(container, '2026-10-09').querySelector('.num .ring')).toBeTruthy();
+    expect(cell(container, '2026-10-09').querySelector('.ring.draw')).toBeNull();
+    expect(cell(container, '2026-10-10').querySelector('.ring.draw')).toBeTruthy();
+    expect(cell(container, '2026-10-11').querySelector('.ring')).toBeNull();
+    expect(cell(container, '2026-10-09').getAttribute('aria-label')).toMatch(/, best day$/);
+    expect(cell(container, '2026-10-11').getAttribute('aria-label')).not.toMatch(/best day/);
+    expect(container.textContent).toContain('Most people free');
+  });
+
+  it('has no circle legend without best days', () => {
+    const { container } = render(<Harness />);
+    expect(container.textContent).not.toContain('Most people free');
+  });
+
   it('renders tallies, range states, and the month structure', () => {
     const { container } = render(<Harness />);
     const d9 = cell(container, '2026-10-09');

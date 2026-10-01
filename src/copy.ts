@@ -67,11 +67,14 @@ export const copy = {
     legendMine: 'Your days',
     legendTally: 'One mark per person free',
     legendNumber: 'People free that day',
+    legendBest: 'Most people free',
     legendSelectable: 'Tap to mark',
     legendOut: 'Outside the dates',
     // Screen reader label for a day button. `date` comes from formatDayLong.
-    dayLabel: (date: string, count: number, total: number) =>
-      count && total ? `${date}, ${count} of ${total} ${plural(total, 'person', 'people')} free` : `${date}, nobody free yet`,
+    // `best` mirrors the red circle.
+    dayLabel: (date: string, count: number, total: number, best = false) =>
+      (count && total ? `${date}, ${count} of ${total} ${plural(total, 'person', 'people')} free` : `${date}, nobody free yet`) +
+      (best ? ', best day' : ''),
   },
 
   join: {
