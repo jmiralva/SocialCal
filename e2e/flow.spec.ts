@@ -110,3 +110,50 @@ test('creator and friend find the best days together', async ({ page, browser })
   await expect(friend.getByRole('button', { name: 'Edit event' })).toHaveCount(0);
   await friendContext.close();
 });
+
+test('a keyboard-only visitor joins, marks a day, and uses help', async ({ browser, request }) => {
+  const created = await request.post('/api/events', {
+    data: { name: 'Keyboard picnic', description: '', startDate: iso(1), endDate: iso(14), creatorName: 'Ana' },
+  });
+  expect(created.ok()).toBe(true);
+  const { eventId } = (await created.json()) as { eventId: string };
+
+  // Desktop context: the Pixel 7 project device is a touch device, where the name field doesn't take focus.
+  const context = await browser.newContext({ ...devices['Desktop Chrome'], baseURL: 'http://localhost:8788' });
+  const page = await context.newPage();
+  await page.goto(`/e/${eventId}`);
+
+  // Join with the keyboard
+  await expect(page.getByRole('dialog', { name: 'Keyboard picnic' })).toBeVisible();
+  await expect(page.getByLabel('Your name')).toBeFocused();
+  await page.keyboard.type('Sam');
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('Marking days for')).toBeVisible();
+
+  // Tab into the calendar; it lands on the first selectable day
+  for (let i = 0; i < 15; i++) {
+    if (await page.evaluate(() => document.activeElement?.classList.contains('day'))) break;
+    await page.keyboard.press('Tab');
+  }
+  await expect(day(page, iso(1))).toBeFocused();
+
+  // Mark the next day with an arrow and Enter
+  await page.keyboard.press('ArrowRight');
+  await expect(day(page, iso(2))).toBeFocused();
+  const saved = savedDates(page, 1);
+  await page.keyboard.press('Enter');
+  await expect(day(page, iso(2))).toHaveAttribute('aria-pressed', 'true');
+  await expect(day(page, iso(2))).toContainText('1/2');
+  await saved;
+
+  // Help opens from the keyboard, closes on Escape, and gives focus back
+  const help = page.getByRole('button', { name: 'How socialcal works' });
+  await help.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog', { name: 'How socialcal works' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(help).toBeFocused();
+
+  await context.close();
+});
