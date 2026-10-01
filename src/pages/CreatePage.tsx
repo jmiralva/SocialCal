@@ -2,6 +2,8 @@ import { useState } from 'preact/hooks';
 import type { Navigate } from '../App';
 import { TopBar } from '../components/TopBar';
 import { EventFields } from '../components/EventFields';
+import { HelpLink } from '../components/HelpLink';
+import { HelpSheet } from '../components/HelpSheet';
 import { api, ApiRequestError } from '../lib/api';
 import { markJustCreated } from '../lib/storage';
 import { addDays, todayLocalISO } from '../../shared/dates';
@@ -20,6 +22,7 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [help, setHelp] = useState(false);
 
   const submit = async (e: Event) => {
     e.preventDefault();
@@ -57,6 +60,7 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
       <form class="create" onSubmit={submit} noValidate>
         <h1>Find a day that works</h1>
         <p class="lede">Name the plan, pick the window, share the link.</p>
+        <HelpLink onClick={() => setHelp(true)} />
         <EventFields form={form} errors={errors} onField={(key, value) => setForm((f) => ({ ...f, [key]: value }))} />
         <label class="field">
           <span>Your name</span>
@@ -74,6 +78,7 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
           {busy ? 'Creating…' : 'Create calendar'}
         </button>
       </form>
+      {help && <HelpSheet onClose={() => setHelp(false)} />}
     </div>
   );
 }

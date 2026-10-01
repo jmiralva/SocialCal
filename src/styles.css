@@ -140,7 +140,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 
 .create { max-width: 480px; margin: 12px auto 40px; padding: 0 16px; }
 .create h1 { font-size: 28px; margin-bottom: 4px; }
-.create .lede { color: var(--ink-2); margin: 0 0 18px; }
+.create .lede { color: var(--ink-2); margin: 0 0 6px; }
+.create .help-link { margin-bottom: 18px; }
 .center { max-width: 420px; margin: 60px auto; padding: 0 16px; text-align: center; }
 
 @media (min-width: 900px) {

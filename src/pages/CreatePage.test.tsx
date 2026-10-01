@@ -12,6 +12,17 @@ vi.mock(import('../lib/api'), async (importOriginal) => {
 const type = (label: string, value: string) => fireEvent.input(screen.getByLabelText(label), { target: { value } });
 
 describe('CreatePage', () => {
+  it('opens and closes help without submitting the form', () => {
+    vi.mocked(api.createEvent).mockClear();
+    render(<CreatePage navigate={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
+    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByText('Give the plan a name.')).toBeNull();
+    expect(api.createEvent).not.toHaveBeenCalled();
+  });
+
   it('shows inline errors for missing fields', async () => {
     render(<CreatePage navigate={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Create calendar' }));
