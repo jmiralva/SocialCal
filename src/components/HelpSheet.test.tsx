@@ -22,12 +22,12 @@ describe('HelpSheet', () => {
     mockPointer(false);
     const { unmount } = render(<HelpSheet onClose={vi.fn()} />);
     expect(screen.getByText('Drag')).toBeTruthy();
-    expect(screen.getByText('Arrow keys')).toBeTruthy();
+    expect(screen.getByText('Use the arrow keys')).toBeTruthy();
     unmount();
     mockPointer(true);
     render(<HelpSheet onClose={vi.fn()} />);
     expect(screen.getByText('Press and hold')).toBeTruthy();
-    expect(screen.queryByText('Arrow keys')).toBeNull();
+    expect(screen.queryByText('Use the arrow keys')).toBeNull();
   });
 
   it('links to the author and the repo', () => {

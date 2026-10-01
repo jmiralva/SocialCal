@@ -122,7 +122,7 @@ export const copy = {
     tap: { lead: 'Tap', rest: " a day you're free. Tap again to unmark it." },
     drag: { lead: 'Drag', rest: ' across days to mark several at once.' },
     dragTouch: { lead: 'Press and hold', rest: ', then drag to mark several days.' },
-    keyboard: { lead: 'Arrow keys', rest: ' move between days. Enter or Space marks one.' },
+    keyboard: { lead: 'Use the arrow keys', rest: ' to navigate between days and enter or space to toggle the selected date.' },
     shading: 'Dates in darker green mean more people are free.',
     bestDays: { lead: 'Best days', rest: ' ranks the days that work for the most people.' },
     noSignUp: 'No sign-up or accounts. Just share the link.',
