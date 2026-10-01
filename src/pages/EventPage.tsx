@@ -16,6 +16,7 @@ import { BestDays } from '../components/BestDays';
 import { NameSheet } from '../components/NameSheet';
 import { ReadySheet } from '../components/ReadySheet';
 import { EditEventSheet } from '../components/EditEventSheet';
+import { HelpSheet } from '../components/HelpSheet';
 import { Toast } from '../components/Toast';
 import { NotFound } from './NotFound';
 import { weekStartForLocale } from '../lib/weekStart';
@@ -35,7 +36,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
   // Set only on the page right after creating; holds the edit key for the ready sheet until it closes.
   const [justCreatedKey] = useState(() => peekJustCreated(eventId));
   const [viewOnly, setViewOnly] = useState(false);
-  const [sheet, setSheet] = useState<null | 'ready' | 'rename' | 'edit'>(() => (justCreatedKey ? 'ready' : null));
+  const [sheet, setSheet] = useState<null | 'ready' | 'rename' | 'edit' | 'help'>(() => (justCreatedKey ? 'ready' : null));
   const [tab, setTab] = useState<'all' | 'best'>('all');
   const [localDates, setLocalDates] = useState<string[] | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaverStatus>('idle');
@@ -234,7 +235,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
 
   return (
     <div class="page" data-tab={tab}>
-      <TopBar onNew={() => navigate('/')} onShare={share} />
+      <TopBar onNew={() => navigate('/')} onShare={share} onHelp={() => setSheet('help')} />
       <div class="layout">
         <main class="main">
           <EventHeader event={event} isCreator={isCreator} onEdit={() => setSheet('edit')} />
@@ -287,6 +288,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
           submitLabel="Continue"
           onSubmit={join}
           secondary={{ label: 'Just look', onClick: () => setViewOnly(true) }}
+          onHelp={() => setSheet('help')}
         />
       )}
       {sheet === 'ready' && justCreatedKey && (
@@ -303,6 +305,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
         />
       )}
       {sheet === 'edit' && isCreator && <EditEventSheet event={event} onSave={saveEvent} onClose={() => setSheet(null)} />}
+      {sheet === 'help' && <HelpSheet onClose={() => setSheet(null)} />}
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </div>
   );

@@ -68,6 +68,44 @@ describe('EventPage', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('opens and closes help from the top bar', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(withMe(CREATOR));
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'How socialcal works' }));
+    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('closes help from the overlay', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(withMe(CREATOR));
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'How socialcal works' }));
+    fireEvent.click(document.querySelector('.overlay')!);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('swaps the name sheet for help and back for a new visitor', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(payload);
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByRole('dialog', { name: 'Fall camping trip' });
+    fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
+    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Fall camping trip' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+    expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
+  });
+
+  it('does not bring the name sheet back after help when just looking', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(payload);
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Just look' }));
+    fireEvent.click(screen.getByRole('button', { name: 'How socialcal works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByText('Viewing only')).toBeTruthy();
+  });
+
   it('joins and becomes the current person right away', async () => {
     vi.mocked(api.getEvent)
       .mockResolvedValueOnce(payload)
