@@ -62,7 +62,7 @@ test('creator and friend find the best days together', async ({ page, browser })
 
   // Identity lives in an HttpOnly cookie, not localStorage
   const deviceCookie = (await friendContext.cookies()).find((c) => c.name === 'sc_device');
-  expect(deviceCookie).toMatchObject({ httpOnly: true, sameSite: 'Lax' });
+  expect(deviceCookie).toMatchObject({ httpOnly: true, secure: false, sameSite: 'Lax' });
   await friend.evaluate(() => localStorage.clear());
   await friend.reload();
   await expect(friend.getByText('Marking days for')).toBeVisible();

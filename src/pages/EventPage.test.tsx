@@ -103,7 +103,13 @@ describe('EventPage', () => {
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     fireEvent.input(await screen.findByLabelText('Your name'), { target: { value: 'Maya' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(await screen.findByText("Cookies are blocked, so this browser can't remember you.")).toBeTruthy();
+    const blocked = "Cookies are blocked, so this browser can't remember you.";
+    expect(await screen.findByText(blocked)).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // Once the toast times out, "Add my days" must say why nothing happens instead of doing nothing.
+    await waitFor(() => expect(screen.queryByText(blocked)).toBeNull(), { timeout: 3000 });
+    fireEvent.click(screen.getByRole('button', { name: 'Add my days' }));
+    expect(await screen.findByText(blocked)).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -146,10 +152,15 @@ describe('EventPage', () => {
   it('keeps the ready sheet until it is closed', async () => {
     markJustCreated(ID, KEY);
     vi.mocked(api.getEvent).mockResolvedValue(withMe(CREATOR));
-    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    const { unmount } = render(<EventPage eventId={ID} navigate={vi.fn()} />);
     expect(await screen.findByRole('dialog', { name: 'Your calendar is ready' })).toBeTruthy();
     expect(screen.getByText(`${location.origin}/e/${ID}#edit=${KEY}`)).toBeTruthy();
     expect(peekJustCreated(ID)).toBe(KEY);
+    // A fresh mount (reload) still shows the sheet until Done is tapped.
+    unmount();
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    expect(await screen.findByRole('dialog', { name: 'Your calendar is ready' })).toBeTruthy();
+    expect(screen.getByText(`${location.origin}/e/${ID}#edit=${KEY}`)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(peekJustCreated(ID)).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();

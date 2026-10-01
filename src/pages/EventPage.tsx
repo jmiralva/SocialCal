@@ -243,7 +243,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
               name={myParticipant?.name}
               count={myCount}
               onChangeName={() => setSheet('rename')}
-              onAddDays={() => setViewOnly(false)}
+              onAddDays={() => (cookiesBlocked ? setToast(COOKIES_BLOCKED) : setViewOnly(false))}
             />
             <Calendar
               months={monthGrids(event.startDate, event.endDate, WEEK_START)}
