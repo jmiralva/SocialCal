@@ -1,3 +1,5 @@
+import type { Env } from './env';
+import { ApiError } from './errors';
 import { randomId, sha256 } from './crypto';
 
 const NAME = 'sc_device';
@@ -48,4 +50,18 @@ export class Device {
     if (!this.secret || !(this.minted || refresh)) return null;
     return `${NAME}=${this.secret}; Max-Age=${MAX_AGE}; Path=/; HttpOnly; SameSite=Lax${this.secure ? '; Secure' : ''}`;
   }
+}
+
+export async function linkedParticipant(env: Env, deviceHash: string | null, eventId: string): Promise<string | null> {
+  if (!deviceHash) return null;
+  const row = await env.DB.prepare('SELECT participant_id FROM devices WHERE device_hash = ? AND event_id = ?')
+    .bind(deviceHash, eventId)
+    .first<{ participant_id: string }>();
+  return row?.participant_id ?? null;
+}
+
+export async function requireParticipant(env: Env, deviceHash: string | null, eventId: string, participantId: string): Promise<void> {
+  const linked = await linkedParticipant(env, deviceHash, eventId);
+  if (!linked) throw new ApiError(401, 'device_required', "This browser isn't part of this calendar.");
+  if (linked !== participantId) throw new ApiError(403, 'forbidden', "This browser can't make that change.");
 }
