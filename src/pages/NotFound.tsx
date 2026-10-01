@@ -1,8 +1,10 @@
 import type { Navigate } from '../App';
 import { TopBar } from '../components/TopBar';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { copy } from '../copy';
 
 export function NotFound({ navigate }: { navigate: Navigate }) {
+  useDocumentTitle(copy.title.base);
   return (
     <div class="page">
       <TopBar onNew={() => navigate('/')} showNew={false} />

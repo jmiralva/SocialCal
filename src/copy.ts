@@ -7,6 +7,13 @@ import { plural } from './lib/best';
 export const copy = {
   brand: 'SocialCal',
 
+  // Browser tab titles. index.html's <title> is the plain brand; pages set these once they render.
+  title: {
+    base: 'SocialCal',
+    create: 'SocialCal: Find the day that works for everyone',
+    event: (name: string) => `SocialCal: ${name}`,
+  },
+
   topBar: {
     help: 'How SocialCal works',
     new: 'New',

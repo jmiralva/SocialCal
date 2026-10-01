@@ -33,11 +33,22 @@ const withMe = (me: Me | null, extra: Partial<EventPayload> = {}): EventPayload 
 const never = () => new Promise<never>(() => {});
 
 beforeEach(() => {
+  document.title = '';
   for (const fn of [api.getEvent, api.join, api.updatePerson, api.updateEvent, api.claimCreator]) vi.mocked(fn).mockReset();
 });
 afterEach(() => history.replaceState(null, '', '/'));
 
 describe('EventPage', () => {
+  it('titles the tab with the event name once it loads, and the plain brand until then', async () => {
+    vi.mocked(api.getEvent).mockReturnValue(never());
+    const loading = render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    expect(document.title).toBe('SocialCal');
+    loading.unmount();
+    vi.mocked(api.getEvent).mockResolvedValue(payload);
+    render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await waitFor(() => expect(document.title).toBe('SocialCal: Fall camping trip'));
+  });
+
   it('circles the best day once two people share it, without drawing it on load', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(
       withMe(CREATOR, {
@@ -305,6 +316,7 @@ describe('EventPage', () => {
     vi.mocked(api.getEvent).mockRejectedValue(new ApiRequestError(404, 'event_not_found', "This calendar doesn't exist."));
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     expect(await screen.findByText("This calendar doesn't exist")).toBeTruthy();
+    expect(document.title).toBe('SocialCal');
   });
 
   it('offers a retry when loading fails', async () => {

@@ -22,6 +22,7 @@ test('creator and friend find the best days together', async ({ page, browser })
 
   // Creator creates the event
   await page.goto('/');
+  await expect(page).toHaveTitle('SocialCal: Find the day that works for everyone');
   await page.getByLabel("What's the plan?").fill('Fall camping trip');
   await page.getByLabel('Description').fill('Two nights');
   await page.getByLabel('From', { exact: true }).fill(start);
@@ -33,6 +34,7 @@ test('creator and friend find the best days together', async ({ page, browser })
   expect(editLink).toMatch(/\/e\/[A-Za-z0-9]{22}#edit=[A-Za-z0-9]{22}$/);
   await page.getByRole('button', { name: 'Done' }).click();
   const eventPath = new URL(page.url()).pathname;
+  await expect(page).toHaveTitle('SocialCal: Fall camping trip');
 
   // Creator drags a three-day span
   const saved = savedDates(page, 3);

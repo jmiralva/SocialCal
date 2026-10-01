@@ -4,6 +4,7 @@ import { TopBar } from '../components/TopBar';
 import { EventFields } from '../components/EventFields';
 import { HelpLink } from '../components/HelpLink';
 import { HelpSheet } from '../components/HelpSheet';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { api, ApiRequestError } from '../lib/api';
 import { markJustCreated } from '../lib/storage';
 import { addDays, todayLocalISO } from '../../shared/dates';
@@ -12,6 +13,7 @@ import type { EventPatch } from '../../shared/types';
 import { copy } from '../copy';
 
 export function CreatePage({ navigate }: { navigate: Navigate }) {
+  useDocumentTitle(copy.title.create);
   const today = todayLocalISO();
   const [form, setForm] = useState<EventPatch>({
     name: '',

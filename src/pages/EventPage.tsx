@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { Navigate } from '../App';
 import { useNewBestDays } from '../hooks/useNewBestDays';
 import { useEvent } from '../hooks/useEvent';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { api, ApiRequestError } from '../lib/api';
 import { computeBest, countByDay } from '../lib/best';
 import { createSaver, type SaverStatus } from '../lib/saver';
@@ -37,6 +38,7 @@ const withLocalDates = (data: EventPayload, localDates: string[] | null) =>
 
 export function EventPage({ eventId, navigate }: { eventId: string; navigate: Navigate }) {
   const { state, refresh, retry, setData } = useEvent(eventId);
+  useDocumentTitle(state.status === 'ready' ? copy.title.event(state.data.event.name) : copy.title.base);
   // Set only on the page right after creating; holds the edit key for the ready sheet until it closes.
   const [justCreatedKey] = useState(() => peekJustCreated(eventId));
   const [viewOnly, setViewOnly] = useState(false);

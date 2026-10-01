@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/preact';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CreatePage } from './CreatePage';
 import { api } from '../lib/api';
 import { peekJustCreated } from '../lib/storage';
@@ -11,7 +11,16 @@ vi.mock(import('../lib/api'), async (importOriginal) => {
 
 const type = (label: string, value: string) => fireEvent.input(screen.getByLabelText(label), { target: { value } });
 
+beforeEach(() => {
+  document.title = '';
+});
+
 describe('CreatePage', () => {
+  it('sets the tab title', () => {
+    render(<CreatePage navigate={vi.fn()} />);
+    expect(document.title).toBe('SocialCal: Find the day that works for everyone');
+  });
+
   it('marks invalid fields and points them at their error', async () => {
     render(<CreatePage navigate={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Create calendar' }));
