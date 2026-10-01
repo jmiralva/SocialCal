@@ -14,6 +14,25 @@ describe('HelpSheet', () => {
     fireEvent.click(container.querySelector('.overlay')!);
     expect(onClose).toHaveBeenCalledTimes(2);
   });
+
+  it('explains drag for a mouse, and press-and-hold on touch', () => {
+    const mockPointer = (coarse: boolean) =>
+      vi.stubGlobal('matchMedia', (q: string) => ({ matches: coarse && q === '(pointer: coarse)' }));
+    mockPointer(false);
+    const { unmount } = render(<HelpSheet onClose={vi.fn()} />);
+    expect(screen.getByText('Drag')).toBeTruthy();
+    unmount();
+    mockPointer(true);
+    render(<HelpSheet onClose={vi.fn()} />);
+    expect(screen.getByText('Press and hold')).toBeTruthy();
+    vi.unstubAllGlobals();
+  });
+
+  it('links to the author and the repo', () => {
+    render(<HelpSheet onClose={vi.fn()} />);
+    expect(screen.getByRole('link', { name: 'Jorge Mir Alvarez' }).getAttribute('href')).toBe('https://jmiralva.me');
+    expect(screen.getByRole('link', { name: 'GitHub' }).getAttribute('href')).toBe('https://github.com/jmiralva/socialcal');
+  });
 });
 
 describe('HelpLink', () => {

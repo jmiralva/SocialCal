@@ -1,9 +1,11 @@
 import { Sheet } from './Sheet';
 import { copy } from '../copy';
+import { isCoarsePointer } from '../lib/pointer';
 
 const { help } = copy;
 
 export function HelpSheet({ onClose }: { onClose: () => void }) {
+  const drag = isCoarsePointer() ? help.dragTouch : help.drag;
   return (
     <Sheet label={help.title} onClose={onClose}>
       <h2>{help.title}</h2>
@@ -13,6 +15,7 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
       <ul class="help-list">
         <li>{help.create}</li>
         <li>
+          {help.share.before}
           <b>{help.share.lead}</b>
           {help.share.rest}
         </li>
@@ -25,21 +28,29 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
           {help.tap.rest}
         </li>
         <li>
-          <b>{help.drag.lead}</b>
-          {help.drag.rest}
+          <b>{drag.lead}</b>
+          {drag.rest}
         </li>
         <li>{help.shading}</li>
         <li>
           <b>{help.bestDays.lead}</b>
           {help.bestDays.rest}
         </li>
+        <li>{help.noSignUp}</li>
       </ul>
 
-      <h3 class="help-h">{help.accountsHeading}</h3>
-      <ul class="help-list">
-        <li>{help.noSignUp}</li>
-        <li>{help.editLink}</li>
-      </ul>
+      <h3 class="help-h">{help.aboutHeading}</h3>
+      <p class="help-about">
+        {help.about.builtBy}{' '}
+        <a href={help.about.authorUrl} target="_blank" rel="noopener">
+          {help.about.author}
+        </a>{' '}
+        {help.about.openSource}{' '}
+        <a href={help.about.repoUrl} target="_blank" rel="noopener">
+          {help.about.github}
+        </a>
+        .
+      </p>
 
       <div class="sheet-actions">
         <button type="button" class="btn" onClick={onClose}>

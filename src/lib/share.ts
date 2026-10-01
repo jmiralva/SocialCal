@@ -1,3 +1,5 @@
+import { isCoarsePointer } from './pointer';
+
 export const eventUrl = (id: string, origin: string = location.origin) => `${origin}/e/${id}`;
 
 export const editUrl = (id: string, key: string, origin: string = location.origin) => `${origin}/e/${id}#edit=${key}`;
@@ -8,8 +10,7 @@ export function readEditKeyFromHash(hash: string): string | null {
 }
 
 export async function shareOrCopy(url: string, title: string): Promise<'shared' | 'copied' | 'failed'> {
-  const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
-  if (coarse && typeof navigator.share === 'function') {
+  if (isCoarsePointer() && typeof navigator.share === 'function') {
     try {
       await navigator.share({ title, url });
       return 'shared';
