@@ -113,10 +113,12 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 
 .field { display: block; margin-bottom: 12px; }
 .field > span { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
-.field input, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 16px; }
+.field input, .field textarea { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 16px; }
 .field textarea { min-height: 72px; resize: vertical; }
 .field-error { display: block; color: var(--error); font-size: 12px; margin-top: 4px; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.field-row .field { min-width: 0; }
+.field input[type='date'] { -webkit-appearance: none; appearance: none; min-height: 44px; }
 .form-error { color: var(--error); font-size: 13px; margin: 0 0 10px; }
 
 .copy-label { font-size: 13px; font-weight: 700; margin: 12px 0 5px; }

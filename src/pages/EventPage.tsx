@@ -51,7 +51,15 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
     api
       .claimCreator(eventId, key)
       .then((r) => setIdentity(saveIdentity(eventId, { editKey: key, participantId: r.participantId, token: r.token })))
-      .catch(() => setToast("That edit link didn't work for this calendar."))
+      .catch((e) => {
+        if (e instanceof ApiRequestError && e.status >= 400 && e.status < 500) {
+          setToast("That edit link didn't work for this calendar.");
+        } else {
+          // Network/5xx: the key was never checked. Keep it in identity storage so it isn't lost with the URL hash.
+          setIdentity(saveIdentity(eventId, { editKey: key }));
+          setToast("Couldn't check your edit link. Reload this page to try again.");
+        }
+      })
       .finally(() => setClaiming(false));
   }, [eventId]);
 

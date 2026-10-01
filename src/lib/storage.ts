@@ -3,10 +3,41 @@ export type Identity = { participantId?: string; token?: string; editKey?: strin
 const identityKey = (eventId: string) => `socialcal:${eventId}`;
 const createdKey = (eventId: string) => `socialcal:created:${eventId}`;
 
-export function loadIdentity(eventId: string): Identity {
+// In-memory fallback so identity and the just-created flag survive the session when browser storage throws.
+const memory = new Map<string, string>();
+
+function read(store: () => Storage, key: string): string | null {
   try {
-    const raw = localStorage.getItem(identityKey(eventId));
-    return raw ? (JSON.parse(raw) as Identity) : {};
+    return store().getItem(key);
+  } catch {
+    return memory.get(key) ?? null;
+  }
+}
+
+function write(store: () => Storage, key: string, value: string): void {
+  try {
+    store().setItem(key, value);
+    memory.delete(key);
+  } catch {
+    memory.set(key, value);
+  }
+}
+
+function remove(store: () => Storage, key: string): void {
+  try {
+    store().removeItem(key);
+  } catch {
+    // fall through to memory
+  }
+  memory.delete(key);
+}
+
+export function loadIdentity(eventId: string): Identity {
+  const raw = read(() => localStorage, identityKey(eventId));
+  if (!raw) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Identity) : {};
   } catch {
     return {};
   }
@@ -14,28 +45,16 @@ export function loadIdentity(eventId: string): Identity {
 
 export function saveIdentity(eventId: string, patch: Identity): Identity {
   const next = { ...loadIdentity(eventId), ...patch };
-  try {
-    localStorage.setItem(identityKey(eventId), JSON.stringify(next));
-  } catch {
-    // storage unavailable: identity lives in component state for this session
-  }
+  write(() => localStorage, identityKey(eventId), JSON.stringify(next));
   return next;
 }
 
 export function markJustCreated(eventId: string): void {
-  try {
-    sessionStorage.setItem(createdKey(eventId), '1');
-  } catch {
-    // ignore
-  }
+  write(() => sessionStorage, createdKey(eventId), '1');
 }
 
 export function consumeJustCreated(eventId: string): boolean {
-  try {
-    const hit = sessionStorage.getItem(createdKey(eventId)) === '1';
-    sessionStorage.removeItem(createdKey(eventId));
-    return hit;
-  } catch {
-    return false;
-  }
+  const hit = read(() => sessionStorage, createdKey(eventId)) === '1';
+  remove(() => sessionStorage, createdKey(eventId));
+  return hit;
 }

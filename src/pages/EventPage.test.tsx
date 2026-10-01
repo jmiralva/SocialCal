@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/preact';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventPage } from './EventPage';
 import { api, ApiRequestError } from '../lib/api';
 import { saveIdentity } from '../lib/storage';
@@ -70,5 +70,53 @@ describe('EventPage', () => {
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Try again' }));
     await waitFor(() => expect(screen.getAllByRole('heading', { name: 'Fall camping trip' }).length).toBeGreaterThan(0));
+  });
+
+  describe('save failures', () => {
+    beforeEach(() => {
+      vi.mocked(api.updatePerson).mockReset();
+    });
+    const tap = (day: Element) => {
+      fireEvent.pointerDown(day, { pointerType: 'mouse' });
+      fireEvent.pointerUp(window);
+    };
+    const setup = async () => {
+      saveIdentity(ID, { participantId: 'J', token: 'T'.repeat(22), editKey: 'K'.repeat(22) });
+      vi.mocked(api.getEvent).mockResolvedValue(payload);
+      render(<EventPage eventId={ID} navigate={vi.fn()} />);
+      await screen.findByText('Jorge', { selector: 'b.you' });
+      vi.useFakeTimers();
+      const day = document.querySelector('[data-date="2030-10-12"]');
+      expect(day).toBeTruthy();
+      return day as Element;
+    };
+
+    it('stops retrying and toasts on a 403', async () => {
+      vi.mocked(api.updatePerson).mockRejectedValue(new ApiRequestError(403, 'forbidden', 'Nope'));
+      const day = await setup();
+      try {
+        tap(day);
+        await vi.advanceTimersByTimeAsync(700);
+        expect(screen.getByText("This browser can't change these days anymore.")).toBeTruthy();
+        await vi.advanceTimersByTimeAsync(100000);
+        expect(api.updatePerson).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('shows the retry banner and retries on a network error', async () => {
+      vi.mocked(api.updatePerson).mockRejectedValue(new ApiRequestError(0, 'network', 'Network error'));
+      const day = await setup();
+      try {
+        tap(day);
+        await vi.advanceTimersByTimeAsync(600);
+        expect(screen.getByText("Couldn't save, retrying…")).toBeTruthy();
+        await vi.advanceTimersByTimeAsync(2500);
+        expect(vi.mocked(api.updatePerson).mock.calls.length).toBeGreaterThan(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });
