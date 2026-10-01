@@ -20,7 +20,6 @@ export type BestResult =
 
 export function computeBest(participants: Participant[], startDate: string, endDate: string, today: string): BestResult {
   const total = participants.length;
-  if (total < 2) return { kind: 'not-enough-people' };
   const sets = participants.map((person) => ({ id: person.id, dates: new Set(person.dates) }));
   const scores: DayScore[] = rangeDays(startDate, endDate)
     .filter((d) => d >= today)
@@ -30,6 +29,8 @@ export function computeBest(participants: Participant[], startDate: string, endD
     })
     .filter((s) => s.count > 0)
     .sort((a, b) => b.count - a.count || a.date.localeCompare(b.date));
+  // Best days need two people with at least one in-range, upcoming date (a scored day).
+  if (new Set(scores.flatMap((s) => s.available)).size < 2) return { kind: 'not-enough-people' };
   const max = scores[0]?.count ?? 0;
   if (max * 2 < total) {
     return { kind: 'no-majority', max, total, closest: scores.filter((s) => s.count === max).slice(0, 5) };

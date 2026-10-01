@@ -55,6 +55,21 @@ describe('EventPage', () => {
     expect(container.querySelector('[data-date="2030-10-11"] .ring')).toBeNull();
   });
 
+  it('circles nothing while only one of two people has marked dates', async () => {
+    vi.mocked(api.getEvent).mockResolvedValue(
+      withMe(CREATOR, {
+        participants: [
+          { id: 'J', name: 'Jorge', dates: ['2030-10-10', '2030-10-11'] },
+          { id: 'M', name: 'Maya', dates: [] },
+        ],
+      }),
+    );
+    const { container } = render(<EventPage eventId={ID} navigate={vi.fn()} />);
+    await screen.findByText('Jorge', { selector: 'b.you' });
+    expect(container.querySelector('.ring')).toBeNull();
+    expect(screen.getByText('Nobody else yet')).toBeTruthy();
+  });
+
   it('draws the circle when marking a day makes it the best', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(
       withMe(CREATOR, {
