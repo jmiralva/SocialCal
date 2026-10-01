@@ -83,7 +83,7 @@ test('creator and friend find the best days together', async ({ page, browser })
 
   // Both see the same best days
   await friend.getByRole('tab', { name: 'Best days' }).click();
-  await expect(friend.getByRole('heading', { level: 2, name: 'Best days' })).toBeVisible();
+  await expect(friend.getByRole('heading', { level: 2, name: 'Best days', exact: true })).toBeVisible();
   await expect(friend.locator('.day-row.is-top')).toHaveCount(2);
   await expect(friend.locator('.grid .day .ring')).toHaveCount(2);
   await expect(friend.getByRole('button', { name: 'See 1 other day' })).toBeVisible();
@@ -103,7 +103,7 @@ test('creator and friend find the best days together', async ({ page, browser })
   await page.getByLabel('To', { exact: true }).fill(iso(3));
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name: 'Fall camping trip v2' })).toBeVisible();
-  await expect(page.getByRole('heading', { level: 2, name: 'Best day' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Best day', exact: true })).toBeVisible();
   await expect(page.locator('.grid .day .ring')).toHaveCount(1);
   await expect(page.locator('.day-row.is-top')).toHaveCount(1);
   await expect(day(page, d3)).toHaveCount(0);

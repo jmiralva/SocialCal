@@ -203,8 +203,9 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
 .field input::placeholder, .field textarea::placeholder { color: var(--muted); opacity: 1; }
 /* Transparent outline hides the browser ring but comes back in forced-colors mode. */
 .field input:focus, .field textarea:focus { outline: 2px solid transparent; box-shadow: inset 0 0 0 2px var(--ink); }
-/* An invalid field keeps its red edge while focused, so the error stays visible while it's fixed. */
-.field [aria-invalid='true'], .field [aria-invalid='true']:focus { box-shadow: inset 0 0 0 2px var(--error); }
+/* An invalid field keeps its red edge while focused, and focus adds an outer ink ring around it. */
+.field [aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--error); }
+.field [aria-invalid='true']:focus { box-shadow: inset 0 0 0 2px var(--error), 0 0 0 2px var(--ink); }
 .field-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .field-row .field { min-width: 0; }
 .field input[type='date'] { -webkit-appearance: none; appearance: none; min-height: 44px; }

@@ -20,7 +20,7 @@ const renderBest = (result: BestResult, isCreator = false) => {
 
 describe('BestDays', () => {
   it('styles the share button as primary', () => {
-    renderBest({ kind: 'not-enough-people' });
+    renderBest({ kind: 'not-enough-people', marked: ['j'] });
     expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn');
   });
 
@@ -79,8 +79,36 @@ describe('BestDays', () => {
     expect(screen.getByText('No other days work for at least half the group.')).toBeTruthy();
   });
 
+  it('asks a viewer who has not marked days to add theirs when one other person has', () => {
+    renderBest({ kind: 'not-enough-people', marked: ['m'] });
+    expect(screen.getByRole('heading', { level: 2, name: 'Add your days' })).toBeTruthy();
+    expect(screen.getByText("Best days show up once you mark the days you're free.")).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Share the link' })).toBeNull();
+    expect(screen.queryByText('Nobody else yet')).toBeNull();
+  });
+
+  it('asks a browsing viewer (no meId) to add days when one person has marked', () => {
+    render(<BestDays result={{ kind: 'not-enough-people', marked: ['m'] }} participants={people} isCreator={false} onShare={() => {}} onEditDates={() => {}} />);
+    expect(screen.getByText('Add your days')).toBeTruthy();
+  });
+
+  it('separates names with a space and marks lists as lists', () => {
+    const { container } = render(
+      <BestDays
+        result={{ kind: 'ok', total: 4, top: [score('2026-10-17', ['j', 'm', 'p'])], next: [] }}
+        participants={people}
+        meId="j"
+        isCreator={false}
+        onShare={() => {}}
+        onEditDates={() => {}}
+      />,
+    );
+    expect(container.querySelector('.names')!.textContent).toMatch(/^You Maya Sam.*Priya$/);
+    expect(container.querySelector('ol.day-rows')!.getAttribute('role')).toBe('list');
+  });
+
   it('shows the not-enough-people state', () => {
-    const { onShare } = renderBest({ kind: 'not-enough-people' });
+    const { onShare } = renderBest({ kind: 'not-enough-people', marked: ['j'] });
     expect(screen.getByText('Nobody else yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Share the link' }));
     expect(onShare).toHaveBeenCalled();

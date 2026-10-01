@@ -100,6 +100,8 @@ export const copy = {
   best: {
     aloneTitle: 'Nobody else yet',
     aloneBody: 'Best days show up once others add their availability.',
+    addDaysTitle: 'Add your days',
+    addDaysBody: "Best days show up once you mark the days you're free.",
     share: 'Share the link',
     noMajorityTitle: 'No day works for half the group yet',
     noMajorityMax: (max: number, total: number) => `The most overlap so far is ${max} of ${total}.`,

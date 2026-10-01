@@ -1,3 +1,4 @@
+import { Fragment } from 'preact';
 import { formatDay } from '../../shared/dates';
 import type { Participant } from '../../shared/types';
 import type { DayScore } from '../lib/best';
@@ -37,20 +38,28 @@ export function DayCard({
         <span class="day-row-count">{copy.best.cardCount(score.count, total)}</span>
       </div>
       <p class="names">
-        {participants.map((p) => {
+        {participants.map((p, i) => {
           const label = p.id === meId ? copy.best.you : p.name;
+          // The space keeps names apart for screen readers; whitespace-only text in a flex container doesn't render.
+          const gap = i > 0 ? ' ' : null;
           if (available.has(p.id)) {
             return (
-              <span key={p.id} class={p.id === meId ? 'name is-me' : 'name'}>
-                {label}
-              </span>
+              <Fragment key={p.id}>
+                {gap}
+                <span class={p.id === meId ? 'name is-me' : 'name'}>
+                  {label}
+                </span>
+              </Fragment>
             );
           }
           return (
-            <span key={p.id} class="name is-no">
-              <s>{label}</s>
-              <span class="sr-only">{copy.best.notFree}</span>
-            </span>
+            <Fragment key={p.id}>
+              {gap}
+              <span class="name is-no">
+                <s>{label}</s>
+                <span class="sr-only">{copy.best.notFree}</span>
+              </span>
+            </Fragment>
           );
         })}
       </p>

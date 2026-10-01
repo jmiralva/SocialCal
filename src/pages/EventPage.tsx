@@ -150,6 +150,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
   const best = ready ? computeBest(participants, ready.event.startDate, ready.event.endDate, today) : null;
   const bestList = best?.kind === 'ok' ? best.top.map((s) => s.date) : [];
   const bestKey = bestList.join(',');
+  // Keyed on the joined string so the Set stays the same object across polls; don't change the deps to bestList.
   const bestDays = useMemo(() => new Set(bestList), [bestKey]);
   const newBestDays = useNewBestDays(ready ? bestList : null);
 

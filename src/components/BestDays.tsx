@@ -27,6 +27,14 @@ export function BestDays({
   const [showClosest, setShowClosest] = useState(false);
 
   if (result.kind === 'not-enough-people') {
+    if (result.marked.length === 1 && result.marked[0] !== meId) {
+      return (
+        <div class="empty">
+          <h2>{copy.best.addDaysTitle}</h2>
+          <p>{copy.best.addDaysBody}</p>
+        </div>
+      );
+    }
     return (
       <div class="empty">
         <h2>{copy.best.aloneTitle}</h2>
@@ -64,7 +72,7 @@ export function BestDays({
         {showClosest && (
           <>
             <h3 class="best-h3">{copy.best.closest(result.closest.length)}</h3>
-            <ol class="day-rows">
+            <ol class="day-rows" role="list">
               {result.closest.map((s) => (
                 <DayCard key={s.date} score={s} participants={participants} total={result.total} meId={meId} secondary />
               ))}
@@ -80,7 +88,7 @@ export function BestDays({
     <>
       <h2 class="best-title">{copy.best.best(top.length)}</h2>
       <p class="best-sub">{copy.best.subtitle(top[0].count, total)}</p>
-      <ol class="day-rows">
+      <ol class="day-rows" role="list">
         {top.map((s) => (
           <DayCard key={s.date} score={s} participants={participants} total={total} meId={meId} top circled draw={newBestDays.has(s.date)} />
         ))}
@@ -90,7 +98,7 @@ export function BestDays({
       ) : showOthers ? (
         <>
           <h3 class="best-h3">{copy.best.next(next.length)}</h3>
-          <ol class="day-rows">
+          <ol class="day-rows" role="list">
             {next.map((s, i) => (
               <DayCard
                 key={s.date}

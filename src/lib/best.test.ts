@@ -24,22 +24,22 @@ describe('countByDay', () => {
 
 describe('computeBest', () => {
   it('needs at least two people', () => {
-    expect(computeBest([p('a', ['2026-10-09'])], ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people' });
+    expect(computeBest([p('a', ['2026-10-09'])], ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people', marked: ['a'] });
   });
 
   it('needs two people who have marked dates', () => {
     const people = [p('a', ['2026-10-09']), p('b', [])];
-    expect(computeBest(people, ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people' });
+    expect(computeBest(people, ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people', marked: ['a'] });
   });
 
   it('ignores a person whose only date is in the past', () => {
     const people = [p('a', ['2026-10-09']), p('b', ['2026-10-25'])];
-    expect(computeBest(people, ...RANGE, '2026-10-20')).toEqual({ kind: 'not-enough-people' });
+    expect(computeBest(people, ...RANGE, '2026-10-20')).toEqual({ kind: 'not-enough-people', marked: ['b'] });
   });
 
   it('ignores a person whose only date is outside the range', () => {
     const people = [p('a', ['2026-12-25']), p('b', ['2026-10-09'])];
-    expect(computeBest(people, ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people' });
+    expect(computeBest(people, ...RANGE, TODAY)).toEqual({ kind: 'not-enough-people', marked: ['b'] });
   });
 
   it('counts people who joined without dates in the total', () => {
@@ -89,7 +89,7 @@ describe('computeBest', () => {
 
   it('waits for two people with dates when nobody picked days', () => {
     const r = computeBest([p('a', []), p('b', [])], ...RANGE, TODAY);
-    expect(r).toEqual({ kind: 'not-enough-people' });
+    expect(r).toEqual({ kind: 'not-enough-people', marked: [] });
   });
 
   it('ignores past days and dates outside the range', () => {
