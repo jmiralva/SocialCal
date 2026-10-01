@@ -64,6 +64,7 @@ describe('Calendar', () => {
     expect(d9.getAttribute('aria-label')).toBe('Friday, October 9, 2 of 3 people free');
     expect(cell(container, '2026-10-10').getAttribute('aria-label')).toBe('Saturday, October 10, nobody free yet');
     expect(container.querySelector('.day.is-out')!.tagName).toBe('DIV');
+    expect(container.querySelector('.day.is-out')!.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('marks pressed and unavailable days for screen readers', () => {

@@ -118,7 +118,7 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
       if (state) {
         ignoreClickUntil.current = Date.now() + 1000;
         // Safari and Firefox don't focus a button on click; this also moves focus to where a drag ended.
-        gridRef.current?.querySelector<HTMLElement>(`[data-date="${state.to}"]`)?.focus({ preventScroll: true });
+        focusDay(state.to, true);
       }
     };
     const cancel = () => {
@@ -198,10 +198,10 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
             <WeekdayRow weekStart={weekStart} />
             <div class={`grid${editable ? '' : ' is-readonly'}`}>
               {month.cells.map((c, i) => {
-                if (!c) return <div key={`blank-${i}`} />;
+                if (!c) return <div key={`blank-${i}`} aria-hidden="true" />;
                 if (!c.inRange) {
                   return (
-                    <div key={c.iso} class="day is-out">
+                    <div key={c.iso} class="day is-out" aria-hidden="true">
                       <span>{c.day}</span>
                       <small />
                     </div>

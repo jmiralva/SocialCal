@@ -33,7 +33,7 @@ export function Sheet({
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (e.isComposing || !escape.current) return;
+        if (e.isComposing || e.keyCode === 229 || !escape.current) return;
         e.preventDefault();
         escape.current();
       } else if (e.key === 'Tab') {

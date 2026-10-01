@@ -76,6 +76,13 @@ describe('Sheet', () => {
     expect(onEscape).not.toHaveBeenCalled();
   });
 
+  it('ignores the Escape that ends Safari IME composition (keyCode 229)', () => {
+    const onEscape = vi.fn();
+    render(<WithField onEscape={onEscape} />);
+    fireEvent.keyDown(document, { key: 'Escape', keyCode: 229 });
+    expect(onEscape).not.toHaveBeenCalled();
+  });
+
   it('keeps Tab inside the sheet', () => {
     render(<WithField />);
     const first = screen.getByRole('button', { name: 'First' });
