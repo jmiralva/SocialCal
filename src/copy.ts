@@ -67,6 +67,9 @@ export const copy = {
     count: (n: number, total: number) => `${n}/${total}`,
     legendMine: 'Your days',
     legendOthers: 'Others available',
+    // Screen reader label for a day button. `date` comes from formatDayLong.
+    dayLabel: (date: string, count: number, total: number) =>
+      count && total ? `${date}, ${count} of ${total} ${plural(total, 'person', 'people')} free` : `${date}, nobody free yet`,
   },
 
   join: {
@@ -119,6 +122,7 @@ export const copy = {
     tap: { lead: 'Tap', rest: " a day you're free. Tap again to unmark it." },
     drag: { lead: 'Drag', rest: ' across days to mark several at once.' },
     dragTouch: { lead: 'Press and hold', rest: ', then drag to mark several days.' },
+    keyboard: { lead: 'Arrow keys', rest: ' move between days. Enter or Space marks one.' },
     shading: 'Dates in darker green mean more people are free.',
     bestDays: { lead: 'Best days', rest: ' ranks the days that work for the most people.' },
     noSignUp: 'No sign-up or accounts. Just share the link.',

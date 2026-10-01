@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/preact';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HelpSheet } from './HelpSheet';
 import { HelpLink } from './HelpLink';
 
 describe('HelpSheet', () => {
+  afterEach(() => vi.unstubAllGlobals());
   it('is a labelled dialog that closes from Got it and the overlay', () => {
     const onClose = vi.fn();
     const { container } = render(<HelpSheet onClose={onClose} />);
@@ -15,17 +16,18 @@ describe('HelpSheet', () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
-  it('explains drag for a mouse, and press-and-hold on touch', () => {
+  it('explains drag and the keyboard for a mouse, and press-and-hold on touch', () => {
     const mockPointer = (coarse: boolean) =>
       vi.stubGlobal('matchMedia', (q: string) => ({ matches: coarse && q === '(pointer: coarse)' }));
     mockPointer(false);
     const { unmount } = render(<HelpSheet onClose={vi.fn()} />);
     expect(screen.getByText('Drag')).toBeTruthy();
+    expect(screen.getByText('Arrow keys')).toBeTruthy();
     unmount();
     mockPointer(true);
     render(<HelpSheet onClose={vi.fn()} />);
     expect(screen.getByText('Press and hold')).toBeTruthy();
-    vi.unstubAllGlobals();
+    expect(screen.queryByText('Arrow keys')).toBeNull();
   });
 
   it('links to the author and the repo', () => {
