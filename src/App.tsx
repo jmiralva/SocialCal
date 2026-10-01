@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { CreatePage } from './pages/CreatePage';
 import { NotFound } from './pages/NotFound';
+import { EventPage } from './pages/EventPage';
 
 export type Navigate = (to: string) => void;
 
@@ -22,5 +23,7 @@ export function App() {
   }, []);
 
   if (path === '/') return <CreatePage navigate={navigate} />;
+  const match = EVENT_PATH.exec(path);
+  if (match) return <EventPage key={match[1]} eventId={match[1]} navigate={navigate} />;
   return <NotFound navigate={navigate} />;
 }
