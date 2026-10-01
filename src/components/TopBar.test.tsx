@@ -5,13 +5,13 @@ import { TopBar } from './TopBar';
 describe('TopBar', () => {
   it('has no help button without onHelp', () => {
     render(<TopBar onNew={vi.fn()} />);
-    expect(screen.queryByRole('button', { name: 'How socialcal works' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'How SocialCal works' })).toBeNull();
   });
 
   it('calls onHelp from the help button', () => {
     const onHelp = vi.fn();
     render(<TopBar onNew={vi.fn()} onShare={vi.fn()} onHelp={onHelp} />);
-    fireEvent.click(screen.getByRole('button', { name: 'How socialcal works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'How SocialCal works' }));
     expect(onHelp).toHaveBeenCalledOnce();
   });
 

@@ -8,7 +8,7 @@ describe('HelpSheet', () => {
   it('is a labelled dialog that closes from Got it and the overlay', () => {
     const onClose = vi.fn();
     const { container } = render(<HelpSheet onClose={onClose} />);
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     const gotIt = screen.getByRole('button', { name: 'Got it' });
     expect(gotIt.getAttribute('type')).toBe('button');
     fireEvent.click(gotIt);

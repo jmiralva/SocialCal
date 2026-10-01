@@ -5,10 +5,10 @@ import { plural } from './lib/best';
 // A string with a bold lead-in is split into { lead, rest } so the markup stays in the component.
 
 export const copy = {
-  brand: 'socialcal',
+  brand: 'SocialCal',
 
   topBar: {
-    help: 'How socialcal works',
+    help: 'How SocialCal works',
     new: 'New',
     share: 'Share',
   },
@@ -117,7 +117,7 @@ export const copy = {
   },
 
   help: {
-    title: 'How socialcal works',
+    title: 'How SocialCal works',
     sub: 'Find a day that works for a group, without a group chat full of dates.',
     planHeading: 'Create a plan',
     create: 'One person creates a calendar with a date window.',
@@ -133,7 +133,7 @@ export const copy = {
     noSignUp: 'No sign-up or accounts. Just share the link.',
     aboutHeading: 'About',
     about: {
-      builtBy: 'socialcal is built by',
+      builtBy: 'SocialCal is built by',
       author: 'Jorge Mir Alvarez',
       authorUrl: 'https://jmiralva.me',
       openSource: 'and open source on',

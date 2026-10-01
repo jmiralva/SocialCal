@@ -30,7 +30,7 @@ describe('CreatePage', () => {
     vi.mocked(api.createEvent).mockClear();
     render(<CreatePage navigate={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByText('Give the plan a name.')).toBeNull();

@@ -1,4 +1,4 @@
-# socialcal
+# SocialCal
 
 Find the best days to meet up with friends. Create a calendar, share the link, and see which dates work for the most people.
 
