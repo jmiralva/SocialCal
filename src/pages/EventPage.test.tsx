@@ -105,7 +105,7 @@ describe('EventPage', () => {
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     await screen.findByRole('dialog', { name: 'Fall camping trip' });
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
     await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Your name')));
@@ -161,8 +161,8 @@ describe('EventPage', () => {
   it('opens and closes help from the top bar', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(withMe(CREATOR));
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'How socialcal works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: 'How SocialCal works' }));
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -170,7 +170,7 @@ describe('EventPage', () => {
   it('closes help from the overlay', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(withMe(CREATOR));
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'How socialcal works' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'How SocialCal works' }));
     fireEvent.click(document.querySelector('.overlay')!);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -180,7 +180,7 @@ describe('EventPage', () => {
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     await screen.findByRole('dialog', { name: 'Fall camping trip' });
     fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
-    expect(screen.getByRole('dialog', { name: 'How socialcal works' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'How SocialCal works' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Fall camping trip' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
@@ -190,7 +190,7 @@ describe('EventPage', () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Just browse' }));
-    fireEvent.click(screen.getByRole('button', { name: 'How socialcal works' }));
+    fireEvent.click(screen.getByRole('button', { name: 'How SocialCal works' }));
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByText('Viewing only')).toBeTruthy();

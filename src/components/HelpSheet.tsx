@@ -39,7 +39,6 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
           </li>
         )}
         <li>{help.highlight}</li>
-        <li>{help.marks}</li>
         <li>{help.circle}</li>
         <li>
           <b>{help.bestDays.lead}</b>

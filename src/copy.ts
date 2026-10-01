@@ -5,10 +5,10 @@ import { plural } from './lib/best';
 // A string with a bold lead-in is split into { lead, rest } so the markup stays in the component.
 
 export const copy = {
-  brand: 'socialcal',
+  brand: 'SocialCal',
 
   topBar: {
-    help: 'How socialcal works',
+    help: 'How SocialCal works',
     new: 'New',
     share: 'Share',
   },
@@ -64,12 +64,6 @@ export const copy = {
 
   calendar: {
     weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-    legendMine: 'Your days',
-    legendTally: 'One mark per person free',
-    legendNumber: 'People free that day',
-    legendBest: 'Most people free',
-    legendSelectable: 'Tap to mark',
-    legendOut: 'Outside the dates',
     // Screen reader label for a day button. `date` comes from formatDayLong.
     // `best` mirrors the red circle.
     dayLabel: (date: string, count: number, total: number, best = false) =>
@@ -123,7 +117,7 @@ export const copy = {
   },
 
   help: {
-    title: 'How socialcal works',
+    title: 'How SocialCal works',
     sub: 'Find a day that works for a group, without a group chat full of dates.',
     planHeading: 'Create a plan',
     create: 'One person creates a calendar with a date window.',
@@ -134,13 +128,12 @@ export const copy = {
     dragTouch: { lead: 'Press and hold', rest: ', then drag to mark several days.' },
     keyboard: { lead: 'Use the arrow keys', rest: ' to navigate between days and enter or space to toggle the selected date.' },
     highlight: 'Your days get a yellow highlight.',
-    marks: "Each mark on a day is one person who's free. In groups of 10 or more, days show a number instead, and darker days have more people.",
-    circle: 'The day with the most people free gets circled.',
+    circle: 'The days with the most people free get circled.',
     bestDays: { lead: 'Best days', rest: ' ranks the days that work for the most people.' },
     noSignUp: 'No sign-up or accounts. Just share the link.',
     aboutHeading: 'About',
     about: {
-      builtBy: 'socialcal is built by',
+      builtBy: 'SocialCal is built by',
       author: 'Jorge Mir Alvarez',
       authorUrl: 'https://jmiralva.me',
       openSource: 'and open source on',

@@ -61,12 +61,11 @@ describe('Calendar', () => {
     expect(cell(container, '2026-10-11').querySelector('.ring')).toBeNull();
     expect(cell(container, '2026-10-09').getAttribute('aria-label')).toMatch(/, best day$/);
     expect(cell(container, '2026-10-11').getAttribute('aria-label')).not.toMatch(/best day/);
-    expect(container.textContent).toContain('Most people free');
   });
 
-  it('has no circle legend without best days', () => {
+  it('renders no circles when there are no best days', () => {
     const { container } = render(<Harness />);
-    expect(container.textContent).not.toContain('Most people free');
+    expect(container.querySelector('.ring')).toBeNull();
   });
 
   it('renders tallies, range states, and the month structure', () => {
@@ -87,14 +86,12 @@ describe('Calendar', () => {
     const { container, rerender } = render(<Harness total={9} counts={new Map([['2026-10-09', 5]])} />);
     expect(cell(container, '2026-10-09').querySelector('.mark svg')).toBeTruthy();
     expect(container.querySelector('.day.is-shaded')).toBeNull();
-    expect(container.textContent).toContain('One mark per person free');
     rerender(<Harness total={10} counts={new Map([['2026-10-09', 5]])} />);
     const d9 = cell(container, '2026-10-09');
     expect(d9.querySelector('.mark .n')!.textContent).toBe('5');
     expect(d9.className).toContain('is-shaded');
     expect(d9.style.getPropertyValue('--share')).toBe('0.500');
     expect(container.querySelectorAll('.mark svg')).toHaveLength(0);
-    expect(container.textContent).toContain('People free that day');
   });
 
   it('highlights only your days, and never past days', () => {
@@ -104,13 +101,12 @@ describe('Calendar', () => {
     expect(cell(container, '2026-10-07').querySelector('.hl')).toBeTruthy(); // present but hidden by CSS on .is-past
   });
 
-  it('drops "Tap to mark" from the legend in browse mode', () => {
+  it('renders no legend, in editable or browse mode', () => {
     const { container, unmount } = render(<Harness />);
-    expect(container.textContent).toContain('Tap to mark');
+    expect(container.querySelector('.legend')).toBeNull();
     unmount();
     const ro = render(<Harness editable={false} />);
-    expect(ro.container.textContent).not.toContain('Tap to mark');
-    expect(ro.container.textContent).toContain('Outside the dates');
+    expect(ro.container.querySelector('.legend')).toBeNull();
   });
 
   it('plays the swipe on days you add, for 400ms each, including by keyboard', () => {

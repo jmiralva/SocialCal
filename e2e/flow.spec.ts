@@ -52,7 +52,7 @@ test('creator and friend find the best days together', async ({ page, browser })
   const friend = await friendContext.newPage();
   await friend.goto(eventPath);
   await friend.getByRole('button', { name: 'How it works' }).click();
-  await expect(friend.getByRole('dialog', { name: 'How socialcal works' })).toBeVisible();
+  await expect(friend.getByRole('dialog', { name: 'How SocialCal works' })).toBeVisible();
   await friend.getByRole('button', { name: 'Got it' }).click();
   await expect(friend.getByRole('dialog', { name: 'Fall camping trip' })).toBeVisible();
   await friend.getByLabel('Your name').fill('Maya');
@@ -87,8 +87,8 @@ test('creator and friend find the best days together', async ({ page, browser })
   await expect(friend.locator('.day-row.is-top')).toHaveCount(2);
   await expect(friend.locator('.grid .day .ring')).toHaveCount(2);
   await expect(friend.getByRole('button', { name: 'See 1 other day' })).toBeVisible();
-  await friend.getByRole('button', { name: 'How socialcal works' }).click();
-  await expect(friend.getByRole('dialog', { name: 'How socialcal works' })).toBeVisible();
+  await friend.getByRole('button', { name: 'How SocialCal works' }).click();
+  await expect(friend.getByRole('dialog', { name: 'How SocialCal works' })).toBeVisible();
   await friend.getByRole('button', { name: 'Got it' }).click();
   await expect(friend.getByRole('dialog')).toHaveCount(0);
 
@@ -149,10 +149,10 @@ test('a keyboard-only visitor joins, marks a day, and uses help', async ({ brows
   await saved;
 
   // Help opens from the keyboard, closes on Escape, and gives focus back
-  const help = page.getByRole('button', { name: 'How socialcal works' });
+  const help = page.getByRole('button', { name: 'How SocialCal works' });
   await help.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('dialog', { name: 'How socialcal works' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'How SocialCal works' })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(help).toBeFocused();
