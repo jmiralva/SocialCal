@@ -17,6 +17,7 @@
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
   --radius: 12px;
+  --topbar-h: 57px;
 }
 
 * { box-sizing: border-box; }
@@ -33,7 +34,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .linklike { background: none; border: 0; padding: 0; color: var(--ink-2); text-decoration: underline; cursor: pointer; font-size: inherit; }
 .linklike.block { display: block; margin: 12px auto 0; font-size: 13px; color: var(--muted); }
 
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 6px; max-width: 1200px; margin: 0 auto; }
+.topbar { position: sticky; top: 0; z-index: 4; display: flex; justify-content: space-between; align-items: center; height: var(--topbar-h); padding: 0 max(16px, calc((100% - 1200px) / 2 + 16px)); background: var(--bg); border-bottom: 1px solid var(--line); }
 .wordmark { font: 700 17px var(--font-display); color: var(--ink); text-decoration: none; }
 .topbar-actions { display: flex; gap: 8px; align-items: center; }
 .help-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ink-2); cursor: pointer; }
@@ -43,7 +44,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .layout { max-width: 1200px; margin: 0 auto; }
 .main { min-width: 0; }
 
-.event-header { padding: 6px 16px 12px; }
+.event-header { padding: 14px 16px 12px; }
 .event-header h1 { font-size: 26px; line-height: 1.1; }
 .byline { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 .byline b { color: var(--ink); }
@@ -148,15 +149,20 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 
 @media (min-width: 900px) {
   .page { padding-bottom: 24px; }
-  .topbar { padding: 18px 28px 8px; }
+  :root { --topbar-h: 61px; }
+  .topbar { padding: 0 max(28px, calc((100% - 1200px) / 2 + 28px)); }
   .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
-  .event-header { padding: 6px 28px 14px; max-width: 680px; }
+  .event-header { padding: 18px 28px 14px; max-width: 680px; }
   .event-header h1 { font-size: 30px; }
   .marking-bar { margin: 0 28px 10px; max-width: 440px; }
   .calendar { padding: 0 28px; }
   .months { grid-template-columns: 1fr 1fr; }
   .page[data-tab] .pane-all, .page[data-tab] .pane-best, .page[data-tab] .description { display: block; }
-  .pane-best { position: sticky; top: 0; max-height: 100dvh; overflow-y: auto; padding: 16px 20px; border-left: 1px solid var(--line); background: var(--surface); min-height: calc(100dvh - 60px); }
+  /* Event page: the window never scrolls; the calendar and Best days panes scroll independently. Both run to the window edges so scrolling over the side margins still works. */
+  .page[data-tab] { --gutter: max(0px, (100vw - 1200px) / 2); display: flex; flex-direction: column; height: 100dvh; min-height: 0; padding-bottom: 0; }
+  .page[data-tab] .layout { flex: 1; min-height: 0; width: 100%; max-width: none; grid-template-columns: minmax(0, 1fr) calc(320px + var(--gutter)); align-items: stretch; }
+  .page[data-tab] .main { overflow-y: auto; overscroll-behavior: contain; padding: 0 0 24px var(--gutter); }
+  .pane-best { overflow-y: auto; overscroll-behavior: contain; padding: 16px calc(20px + var(--gutter)) 16px 20px; border-left: 1px solid var(--line); background: var(--surface); }
   .pane-best .day-card { background: var(--bg); }
   .pane-best .pill:not(.is-me):not(.is-no) { background: var(--surface); }
   .tabbar { display: none; }
