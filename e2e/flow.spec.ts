@@ -1,0 +1,85 @@
+import { expect, test, devices, type Page } from '@playwright/test';
+
+const iso = (offset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const day = (page: Page, date: string) => page.locator(`[data-date="${date}"]`);
+const savedDates = (page: Page, count: number) =>
+  page.waitForResponse(
+    (r) =>
+      r.url().includes('/people/') &&
+      r.request().method() === 'PATCH' &&
+      r.ok() &&
+      ((JSON.parse(r.request().postData() ?? '{}') as { dates?: string[] }).dates ?? []).length === count,
+  );
+
+test('creator and friend find the best days together', async ({ page, browser }) => {
+  const start = iso(1);
+  const end = iso(30);
+  const [d1, d2, d3] = [iso(2), iso(3), iso(4)];
+
+  // Creator creates the event
+  await page.goto('/');
+  await page.getByLabel("What's the plan?").fill('Fall camping trip');
+  await page.getByLabel('Description').fill('Two nights');
+  await page.getByLabel('From', { exact: true }).fill(start);
+  await page.getByLabel('To', { exact: true }).fill(end);
+  await page.getByLabel('Your name').fill('Jorge');
+  await page.getByRole('button', { name: 'Create calendar' }).click();
+  await expect(page.getByRole('dialog', { name: 'Your calendar is ready' })).toBeVisible();
+  await page.getByRole('button', { name: 'Done' }).click();
+  const eventPath = new URL(page.url()).pathname;
+
+  // Creator drags a three-day span
+  const saved = savedDates(page, 3);
+  await day(page, d1).scrollIntoViewIfNeeded();
+  await day(page, d3).scrollIntoViewIfNeeded();
+  const a = (await day(page, d1).boundingBox())!;
+  const b = (await day(page, d3).boundingBox())!;
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 5 });
+  await page.mouse.up();
+  await expect(page.getByText('· 3 days')).toBeVisible();
+  await saved;
+
+  // Friend joins from a separate browser and marks two days
+  const friendContext = await browser.newContext({ ...devices['Pixel 7'], baseURL: 'http://localhost:8788' });
+  const friend = await friendContext.newPage();
+  await friend.goto(eventPath);
+  await friend.getByLabel('Your name').fill('Maya');
+  await friend.getByRole('button', { name: 'Continue' }).click();
+  await expect(friend.getByText('Marking days for')).toBeVisible();
+  const friendSaved = savedDates(friend, 2);
+  await day(friend, d2).click();
+  await day(friend, d3).click();
+  await expect(friend.getByText('· 2 days')).toBeVisible();
+  await friendSaved;
+
+  // Both see the same best days
+  await friend.getByRole('tab', { name: 'Best days' }).click();
+  await expect(friend.locator('p.eyebrow').first()).toHaveText('Best days');
+  await expect(friend.locator('.day-card.is-top')).toHaveCount(2);
+  await expect(friend.getByRole('button', { name: 'See 1 other day' })).toBeVisible();
+
+  await page.reload();
+  await page.getByRole('tab', { name: 'Best days' }).click();
+  await expect(page.locator('.day-card.is-top')).toHaveCount(2);
+  await expect(page.locator('.day-card.is-top').first()).toContainText('2 of 2');
+
+  // Creator renames the event and shrinks the date range so d3 falls outside it
+  await page.getByRole('button', { name: 'Edit event' }).click();
+  await page.getByLabel("What's the plan?").fill('Fall camping trip v2');
+  await page.getByLabel('To', { exact: true }).fill(iso(3));
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('heading', { name: 'Fall camping trip v2' })).toBeVisible();
+  await expect(page.locator('p.eyebrow').first()).toHaveText('Best day');
+  await expect(page.locator('.day-card.is-top')).toHaveCount(1);
+  await expect(day(page, d3)).toHaveCount(0);
+
+  // Friend has no edit link
+  await expect(friend.getByRole('button', { name: 'Edit event' })).toHaveCount(0);
+  await friendContext.close();
+});
