@@ -34,6 +34,13 @@ describe('trackInputModality', () => {
     expect(document.documentElement.dataset.input).toBe('pointer');
   });
 
+  it('counts Option+Tab as keyboard', () => {
+    stop = trackInputModality();
+    fireEvent.pointerDown(document.body);
+    fireEvent.keyDown(document.body, { key: 'Tab', altKey: true });
+    expect(document.documentElement.dataset.input).toBe('keyboard');
+  });
+
   it('counts Shift+Tab as keyboard', () => {
     stop = trackInputModality();
     fireEvent.pointerDown(document.body);

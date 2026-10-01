@@ -5,8 +5,9 @@ const MODIFIER_KEYS = ['Shift', 'Control', 'Alt', 'Meta'];
 export function trackInputModality(): () => void {
   const root = document.documentElement;
   // Modifiers and shortcuts (Cmd+C, Cmd+Tab) are not navigation, so they leave a mouse-focused element without a ring.
+  // Option+Tab is the exception: it is how Safari moves between buttons and links by default.
   const onKey = (e: KeyboardEvent) => {
-    if (e.metaKey || e.ctrlKey || e.altKey || MODIFIER_KEYS.includes(e.key)) return;
+    if (MODIFIER_KEYS.includes(e.key) || e.metaKey || e.ctrlKey || (e.altKey && e.key !== 'Tab')) return;
     root.dataset.input = 'keyboard';
   };
   const onPointer = () => (root.dataset.input = 'pointer');
