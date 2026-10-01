@@ -20,10 +20,9 @@ import { HelpSheet } from '../components/HelpSheet';
 import { Toast } from '../components/Toast';
 import { NotFound } from './NotFound';
 import { weekStartForLocale } from '../lib/weekStart';
+import { copy } from '../copy';
 
-const CANT_EDIT = "This browser can't edit this event. Use your private edit link.";
-const OFFLINE = "Couldn't save. Check your connection and try again.";
-const COOKIES_BLOCKED = "Cookies are blocked, so this browser can't remember you.";
+const { cantEdit: CANT_EDIT, offline: OFFLINE, cookiesBlocked: COOKIES_BLOCKED } = copy.messages;
 
 const isClientError = (e: unknown): e is ApiRequestError => e instanceof ApiRequestError && e.status >= 400 && e.status < 500;
 const isAuthError = (e: unknown) => e instanceof ApiRequestError && (e.status === 401 || e.status === 403);
@@ -84,10 +83,10 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
         if (isClientError(e)) {
           history.replaceState(null, '', location.pathname);
           setClaiming(false);
-          setToast("That edit link didn't work for this calendar.");
+          setToast(copy.messages.editLinkInvalid);
         } else {
           // Network/5xx: the key was never checked. Leave it in the URL so a reload retries.
-          setToast("Couldn't check your edit link. Reload this page to try again.");
+          setToast(copy.messages.editLinkOffline);
         }
       });
   }, [eventId]);
@@ -112,7 +111,7 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
           } catch (e) {
             // 4xx will never succeed on retry: tell the user and stop. Network/5xx errors rethrow so the saver retries.
             if (isClientError(e)) {
-              setToast(isAuthError(e) ? "This browser can't change these days anymore." : `Couldn't save your days: ${e.message}`);
+              setToast(isAuthError(e) ? copy.messages.daysLocked : copy.messages.daysFailed(e.message));
               if (isAuthError(e)) void refresh();
               return;
             }
@@ -139,16 +138,16 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
     };
   }, [saver]);
 
-  if (state.status === 'loading') return <div class="center">Loading…</div>;
+  if (state.status === 'loading') return <div class="center">{copy.event.loading}</div>;
   if (state.status === 'error') {
     if (state.notFound) return <NotFound navigate={navigate} />;
     return (
       <div class="center">
         <div class="empty">
-          <h3>Couldn't load this calendar</h3>
-          <p>Check your connection and try again.</p>
+          <h3>{copy.messages.loadTitle}</h3>
+          <p>{copy.messages.loadBody}</p>
           <button type="button" class="btn" onClick={retry}>
-            Try again
+            {copy.messages.retry}
           </button>
         </div>
       </div>
@@ -169,8 +168,8 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
 
   const share = async () => {
     const result = await shareOrCopy(shareUrl, event.name);
-    if (result === 'copied') setToast('Link copied');
-    if (result === 'failed') setToast("Couldn't copy the link");
+    if (result === 'copied') setToast(copy.messages.linkCopied);
+    if (result === 'failed') setToast(copy.messages.copyFailed);
   };
 
   const changeDates = (next: Set<string>) => {
@@ -272,22 +271,22 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
 
       <nav class="tabbar" role="tablist">
         <button type="button" role="tab" aria-selected={tab === 'all'} onClick={() => setTab('all')}>
-          All days
+          {copy.event.tabAll}
         </button>
         <button type="button" role="tab" aria-selected={tab === 'best'} onClick={() => setTab('best')}>
-          Best days
+          {copy.event.tabBest}
         </button>
       </nav>
 
-      {saveStatus === 'retrying' && <div class="save-banner">Couldn't save, retrying…</div>}
+      {saveStatus === 'retrying' && <div class="save-banner">{copy.event.saveRetrying}</div>}
 
       {!myParticipant && !viewOnly && !claiming && !cookiesBlocked && sheet === null && (
         <NameSheet
           title={event.name}
-          subtitle="What's your name? Then tap the days you're available."
-          submitLabel="Continue"
+          subtitle={copy.join.sub}
+          submitLabel={copy.join.submit}
           onSubmit={join}
-          secondary={{ label: 'Just look', onClick: () => setViewOnly(true) }}
+          secondary={{ label: copy.join.look, onClick: () => setViewOnly(true) }}
           onHelp={() => setSheet('help')}
         />
       )}
@@ -296,12 +295,12 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
       )}
       {sheet === 'rename' && myParticipant && (
         <NameSheet
-          title="Change your name"
-          subtitle="This is how you show up to everyone."
-          submitLabel="Save"
+          title={copy.rename.title}
+          subtitle={copy.rename.sub}
+          submitLabel={copy.rename.submit}
           initialName={myParticipant.name}
           onSubmit={rename}
-          secondary={{ label: 'Cancel', onClick: () => setSheet(null) }}
+          secondary={{ label: copy.rename.cancel, onClick: () => setSheet(null) }}
         />
       )}
       {sheet === 'edit' && isCreator && <EditEventSheet event={event} onSave={saveEvent} onClose={() => setSheet(null)} />}

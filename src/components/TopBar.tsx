@@ -1,4 +1,5 @@
 import { HelpIcon } from './HelpIcon';
+import { copy } from '../copy';
 
 export function TopBar({
   onNew,
@@ -21,22 +22,22 @@ export function TopBar({
           onNew();
         }}
       >
-        socialcal
+        {copy.brand}
       </a>
       <div class="topbar-actions">
         {onHelp && (
-          <button type="button" class="help-icon-btn" aria-label="How socialcal works" onClick={onHelp}>
+          <button type="button" class="help-icon-btn" aria-label={copy.topBar.help} onClick={onHelp}>
             <HelpIcon size={26} />
           </button>
         )}
         {showNew && (
           <button type="button" class="btn btn-new" onClick={onNew}>
-            New
+            {copy.topBar.new}
           </button>
         )}
         {onShare && (
           <button type="button" class="btn btn-share" onClick={onShare}>
-            Share
+            {copy.topBar.share}
           </button>
         )}
       </div>

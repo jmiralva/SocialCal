@@ -1,4 +1,4 @@
-import { plural } from '../lib/best';
+import { copy } from '../copy';
 
 export function MarkingBar({
   name,
@@ -14,10 +14,10 @@ export function MarkingBar({
   if (!name) {
     return (
       <div class="marking-bar">
-        <span>Viewing only</span>
+        <span>{copy.marking.viewOnly}</span>
         {' · '}
         <button type="button" class="linklike" onClick={onAddDays}>
-          Add my days
+          {copy.marking.addDays}
         </button>
       </div>
     );
@@ -25,10 +25,10 @@ export function MarkingBar({
   return (
     <div class="marking-bar">
       <span>
-        Marking days for <b class="you">{name}</b> · {count} {plural(count, 'day', 'days')}
+        {copy.marking.for} <b class="you">{name}</b> · {copy.marking.days(count)}
       </span>
       <button type="button" class="linklike" onClick={onChangeName}>
-        Change name
+        {copy.marking.changeName}
       </button>
     </div>
   );

@@ -1,9 +1,10 @@
 import { useState } from 'preact/hooks';
 import { Sheet } from './Sheet';
+import { copy } from '../copy';
 
 export function ReadySheet({ shareUrl, editUrl, onClose }: { shareUrl: string; editUrl: string; onClose: () => void }) {
   const [copied, setCopied] = useState<'share' | 'edit' | null>(null);
-  const copy = async (which: 'share' | 'edit', text: string) => {
+  const copyText = async (which: 'share' | 'edit', text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(which);
@@ -12,27 +13,27 @@ export function ReadySheet({ shareUrl, editUrl, onClose }: { shareUrl: string; e
     }
   };
   return (
-    <Sheet label="Your calendar is ready" onClose={onClose}>
-      <h2>Your calendar is ready</h2>
-      <p class="sheet-sub">Share the link with friends so they can add their days.</p>
-      <p class="copy-label">Share link</p>
+    <Sheet label={copy.ready.title} onClose={onClose}>
+      <h2>{copy.ready.title}</h2>
+      <p class="sheet-sub">{copy.ready.sub}</p>
+      <p class="copy-label">{copy.ready.shareLabel}</p>
       <div class="copy-row">
         <code>{shareUrl}</code>
-        <button type="button" class="btn btn-share" onClick={() => copy('share', shareUrl)}>
-          {copied === 'share' ? 'Copied' : 'Copy'}
+        <button type="button" class="btn btn-share" onClick={() => copyText('share', shareUrl)}>
+          {copied === 'share' ? copy.ready.copied : copy.ready.copy}
         </button>
       </div>
-      <p class="copy-label">Private edit link</p>
+      <p class="copy-label">{copy.ready.editLabel}</p>
       <div class="copy-row">
         <code>{editUrl}</code>
-        <button type="button" class="btn btn-ghost" onClick={() => copy('edit', editUrl)}>
-          {copied === 'edit' ? 'Copied' : 'Copy'}
+        <button type="button" class="btn btn-ghost" onClick={() => copyText('edit', editUrl)}>
+          {copied === 'edit' ? copy.ready.copied : copy.ready.copy}
         </button>
       </div>
-      <p class="copy-help">Bookmark this. It's the only way to edit this event or your days from another device.</p>
+      <p class="copy-help">{copy.ready.editHelp}</p>
       <div class="sheet-actions">
         <button type="button" class="btn" onClick={onClose}>
-          Done
+          {copy.ready.done}
         </button>
       </div>
     </Sheet>

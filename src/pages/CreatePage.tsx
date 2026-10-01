@@ -9,6 +9,7 @@ import { markJustCreated } from '../lib/storage';
 import { addDays, todayLocalISO } from '../../shared/dates';
 import { LIMITS, validateEventFields, validatePersonName, type FieldErrors } from '../../shared/validate';
 import type { EventPatch } from '../../shared/types';
+import { copy } from '../copy';
 
 export function CreatePage({ navigate }: { navigate: Navigate }) {
   const today = todayLocalISO();
@@ -48,7 +49,7 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
       setFormError(
         err instanceof ApiRequestError && err.status === 400
           ? err.message
-          : "Couldn't create the calendar. Check your connection and try again.",
+          : copy.create.networkError,
       );
       setBusy(false);
     }
@@ -58,16 +59,16 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
     <div class="page">
       <TopBar onNew={() => navigate('/')} showNew={false} />
       <form class="create" onSubmit={submit} noValidate>
-        <h1>Find a day that works</h1>
-        <p class="lede">Name the plan, pick the window, share the link.</p>
+        <h1>{copy.create.title}</h1>
+        <p class="lede">{copy.create.lede}</p>
         <HelpLink onClick={() => setHelp(true)} />
         <EventFields form={form} errors={errors} onField={(key, value) => setForm((f) => ({ ...f, [key]: value }))} />
         <label class="field">
-          <span>Your name</span>
+          <span>{copy.create.yourName}</span>
           <input
             value={creatorName}
             maxLength={LIMITS.personName}
-            placeholder="So friends know it's you"
+            placeholder={copy.create.yourNamePlaceholder}
             autoComplete="given-name"
             onInput={(e) => setCreatorName(e.currentTarget.value)}
           />
@@ -75,7 +76,7 @@ export function CreatePage({ navigate }: { navigate: Navigate }) {
         </label>
         {formError && <p class="form-error">{formError}</p>}
         <button type="submit" class="btn btn-block" disabled={busy}>
-          {busy ? 'Creating…' : 'Create calendar'}
+          {busy ? copy.create.submitting : copy.create.submit}
         </button>
       </form>
       {help && <HelpSheet onClose={() => setHelp(false)} />}

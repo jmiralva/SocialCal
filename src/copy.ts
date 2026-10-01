@@ -1,0 +1,149 @@
+import { plural } from './lib/best';
+
+// Every user-facing string in the app, grouped by screen.
+// Validation and API error messages live in shared/validate.ts and server/, since the server uses them too.
+// A string with a bold lead-in is split into { lead, rest } so the markup stays in the component.
+
+export const copy = {
+  brand: 'socialcal',
+
+  topBar: {
+    help: 'How socialcal works',
+    new: 'New',
+    share: 'Share',
+  },
+
+  helpLink: 'How it works',
+
+  create: {
+    title: 'Find a day that works',
+    lede: 'Name the plan, pick the window, share the link.',
+    yourName: 'Your name',
+    yourNamePlaceholder: "So friends know it's you",
+    submit: 'Create calendar',
+    submitting: 'Creating…',
+    networkError: "Couldn't create the calendar. Check your connection and try again.",
+  },
+
+  eventFields: {
+    plan: "What's the plan?",
+    planPlaceholder: 'e.g. Fall camping trip',
+    description: 'Description',
+    descriptionPlaceholder: 'Optional: where, how long, anything people should know',
+    from: 'From',
+    to: 'To',
+  },
+
+  ready: {
+    title: 'Your calendar is ready',
+    sub: 'Share the link with friends so they can add their days.',
+    shareLabel: 'Share link',
+    editLabel: 'Private edit link',
+    copy: 'Copy',
+    copied: 'Copied',
+    editHelp: "Bookmark this. It's the only way to edit this event or your days from another device.",
+    done: 'Done',
+  },
+
+  event: {
+    loading: 'Loading…',
+    createdBy: 'Created by',
+    edit: 'Edit event',
+    tabAll: 'All days',
+    tabBest: 'Best days',
+    saveRetrying: "Couldn't save, retrying…",
+  },
+
+  marking: {
+    for: 'Marking days for',
+    days: (n: number) => `${n} ${plural(n, 'day', 'days')}`,
+    changeName: 'Change name',
+    viewOnly: 'Viewing only',
+    addDays: 'Add my days',
+  },
+
+  calendar: {
+    weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    count: (n: number, total: number) => `${n}/${total}`,
+    legendMine: 'Your days',
+    legendOthers: 'Others available',
+  },
+
+  join: {
+    sub: "What's your name? Then tap the days you're available.",
+    submit: 'Continue',
+    look: 'Just look',
+  },
+
+  rename: {
+    title: 'Change your name',
+    sub: 'This is how you show up to everyone.',
+    submit: 'Save',
+    cancel: 'Cancel',
+  },
+
+  editEvent: {
+    title: 'Edit event',
+    sub: 'Only you can change these.',
+    cancel: 'Cancel',
+    save: 'Save',
+  },
+
+  best: {
+    aloneTitle: 'Nobody else yet',
+    aloneBody: 'Best days show up once friends add their availability.',
+    share: 'Share the link',
+    noMajorityTitle: 'No day works for half the group yet',
+    noMajorityMax: (max: number, total: number) => `The most overlap so far is ${max} of ${total}.`,
+    noMajorityCreator: 'Nudge people to add more days, or widen the date range.',
+    noMajorityFriend: 'Nudge people to add more days.',
+    editDates: 'Edit dates',
+    showClosest: 'Show closest days anyway',
+    hideClosest: 'Hide closest days',
+    closest: (n: number) => plural(n, 'Closest day so far', 'Closest days so far'),
+    best: (n: number) => plural(n, 'Best day', 'Best days'),
+    noOthers: 'No other days work for at least half the group.',
+    next: (n: number) => plural(n, 'Next best day', 'Next best days'),
+    seeOthers: (n: number) => `See ${n} other ${plural(n, 'day', 'days')}`,
+    hideOthers: 'Hide other days',
+    cardCount: (count: number, total: number) => `${count} of ${total}`,
+  },
+
+  help: {
+    title: 'How socialcal works',
+    sub: 'Find a day that works for a group, without a group chat full of dates.',
+    planHeading: 'Plan',
+    create: 'One person creates a calendar with a date window.',
+    share: { lead: 'Share', rest: ' sends everyone the link.' },
+    markHeading: 'Mark your days',
+    tap: { lead: 'Tap', rest: " a day you're free. Tap again to unmark it." },
+    drag: { lead: 'Drag', rest: ' across days to mark several at once.' },
+    shading: 'Your days have an orange outline. Greener days have more people free.',
+    bestDays: { lead: 'Best days', rest: ' ranks the days that work for the most people.' },
+    accountsHeading: 'No accounts',
+    noSignUp: 'No sign-up and no app. This browser remembers who you are.',
+    editLink: 'Creators get a private edit link for editing from another device.',
+    done: 'Got it',
+  },
+
+  messages: {
+    linkCopied: 'Link copied',
+    copyFailed: "Couldn't copy the link",
+    cantEdit: "This browser can't edit this event. Use your private edit link.",
+    offline: "Couldn't save. Check your connection and try again.",
+    cookiesBlocked: "Cookies are blocked, so this browser can't remember you.",
+    editLinkInvalid: "That edit link didn't work for this calendar.",
+    editLinkOffline: "Couldn't check your edit link. Reload this page to try again.",
+    daysLocked: "This browser can't change these days anymore.",
+    daysFailed: (reason: string) => `Couldn't save your days: ${reason}`,
+    loadTitle: "Couldn't load this calendar",
+    loadBody: 'Check your connection and try again.',
+    retry: 'Try again',
+  },
+
+  notFound: {
+    title: "This calendar doesn't exist",
+    body: 'The link might be mistyped, or the calendar was removed.',
+    cta: 'Create a new one',
+  },
+} as const;
