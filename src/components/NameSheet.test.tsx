@@ -7,7 +7,7 @@ const props = () => ({
   subtitle: "What's your name? Then tap the days you're available.",
   submitLabel: 'Continue',
   onSubmit: vi.fn(async () => null),
-  secondary: { label: 'Just look', onClick: vi.fn() },
+  secondary: { label: 'Just browse', onClick: vi.fn() },
 });
 
 describe('NameSheet', () => {

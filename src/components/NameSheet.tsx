@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { Sheet } from './Sheet';
 import { HelpLink } from './HelpLink';
 import { LIMITS, validatePersonName } from '../../shared/validate';
+import { copy } from '../copy';
 
 export function NameSheet({
   title,
@@ -45,7 +46,7 @@ export function NameSheet({
         <p class="sheet-sub">{subtitle}</p>
         {onHelp && <HelpLink onClick={onHelp} />}
         <label class="field">
-          <span>Your name</span>
+          <span>{copy.create.yourName}</span>
           <input
             value={name}
             maxLength={LIMITS.personName}

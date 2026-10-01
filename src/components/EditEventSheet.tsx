@@ -3,6 +3,7 @@ import { Sheet } from './Sheet';
 import { EventFields } from './EventFields';
 import { validateEventFields, type FieldErrors } from '../../shared/validate';
 import type { EventInfo, EventPatch } from '../../shared/types';
+import { copy } from '../copy';
 
 export function EditEventSheet({
   event,
@@ -36,18 +37,18 @@ export function EditEventSheet({
   };
 
   return (
-    <Sheet label="Edit event" onClose={onClose}>
+    <Sheet label={copy.editEvent.title} onClose={onClose}>
       <form onSubmit={submit} noValidate>
-        <h2>Edit event</h2>
-        <p class="sheet-sub">Only you can change these.</p>
+        <h2>{copy.editEvent.title}</h2>
+        <p class="sheet-sub">{copy.editEvent.sub}</p>
         <EventFields form={form} errors={errors} onField={(key, value) => setForm((f) => ({ ...f, [key]: value }))} />
         {formError && <p class="form-error">{formError}</p>}
         <div class="sheet-actions">
           <button type="button" class="btn btn-ghost" onClick={onClose}>
-            Cancel
+            {copy.editEvent.cancel}
           </button>
           <button type="submit" class="btn" disabled={busy}>
-            Save
+            {copy.editEvent.save}
           </button>
         </div>
       </form>

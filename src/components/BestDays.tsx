@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks';
 import type { Participant } from '../../shared/types';
-import { plural, type BestResult } from '../lib/best';
+import type { BestResult } from '../lib/best';
 import { DayCard } from './DayCard';
+import { copy } from '../copy';
 
 export function BestDays({
   result,
@@ -24,10 +25,10 @@ export function BestDays({
   if (result.kind === 'not-enough-people') {
     return (
       <div class="empty">
-        <h3>Nobody else yet</h3>
-        <p>Best days show up once friends add their availability.</p>
+        <h3>{copy.best.aloneTitle}</h3>
+        <p>{copy.best.aloneBody}</p>
         <button type="button" class="btn btn-share" onClick={onShare}>
-          Share the link
+          {copy.best.share}
         </button>
       </div>
     );
@@ -37,29 +38,28 @@ export function BestDays({
     return (
       <>
         <div class="empty">
-          <h3>No day works for half the group yet</h3>
+          <h3>{copy.best.noMajorityTitle}</h3>
           <p>
-            The most overlap so far is {result.max} of {result.total}.{' '}
-            {isCreator ? 'Nudge people to add more days, or widen the date range.' : 'Nudge people to add more days.'}
+            {copy.best.noMajorityMax(result.max, result.total)} {isCreator ? copy.best.noMajorityCreator : copy.best.noMajorityFriend}
           </p>
           {isCreator ? (
             <button type="button" class="btn" onClick={onEditDates}>
-              Edit dates
+              {copy.best.editDates}
             </button>
           ) : (
             <button type="button" class="btn btn-share" onClick={onShare}>
-              Share the link
+              {copy.best.share}
             </button>
           )}
           {result.closest.length > 0 && (
             <button type="button" class="linklike block" onClick={() => setShowClosest((v) => !v)}>
-              {showClosest ? 'Hide closest days' : 'Show closest days anyway'}
+              {showClosest ? copy.best.hideClosest : copy.best.showClosest}
             </button>
           )}
         </div>
         {showClosest && (
           <>
-            <p class="eyebrow">{plural(result.closest.length, 'Closest day so far', 'Closest days so far')}</p>
+            <p class="eyebrow">{copy.best.closest(result.closest.length)}</p>
             <div class="cards-muted">
               {result.closest.map((s) => (
                 <DayCard key={s.date} score={s} participants={participants} total={result.total} meId={meId} />
@@ -74,15 +74,15 @@ export function BestDays({
   const { top, next, total } = result;
   return (
     <>
-      <p class="eyebrow">{plural(top.length, 'Best day', 'Best days')}</p>
+      <p class="eyebrow">{copy.best.best(top.length)}</p>
       {top.map((s) => (
         <DayCard key={s.date} score={s} participants={participants} total={total} meId={meId} top />
       ))}
       {next.length === 0 ? (
-        <p class="note">No other days work for at least half the group.</p>
+        <p class="note">{copy.best.noOthers}</p>
       ) : showOthers ? (
         <>
-          <p class="eyebrow">{plural(next.length, 'Next best day', 'Next best days')}</p>
+          <p class="eyebrow">{copy.best.next(next.length)}</p>
           {next.map((s, i) => (
             <DayCard
               key={s.date}
@@ -94,12 +94,12 @@ export function BestDays({
             />
           ))}
           <button type="button" class="more" onClick={() => setShowOthers(false)}>
-            Hide other days
+            {copy.best.hideOthers}
           </button>
         </>
       ) : (
         <button type="button" class="more" onClick={() => setShowOthers(true)}>
-          See {next.length} other {plural(next.length, 'day', 'days')}
+          {copy.best.seeOthers(next.length)}
         </button>
       )}
     </>

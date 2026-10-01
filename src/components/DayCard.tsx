@@ -1,6 +1,7 @@
 import { formatDay } from '../../shared/dates';
 import type { Participant } from '../../shared/types';
 import type { DayScore } from '../lib/best';
+import { copy } from '../copy';
 
 export function DayCard({
   score,
@@ -23,7 +24,7 @@ export function DayCard({
       <div class="day-card-row">
         <b>{formatDay(score.date)}</b>
         <span>
-          {score.count} of {total}
+          {copy.best.cardCount(score.count, total)}
         </span>
       </div>
       <div class="meter">

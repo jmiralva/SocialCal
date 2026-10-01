@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'preact/hooks';
 import type { MonthGrid } from '../../shared/dates';
 import { applySpan } from '../lib/selection';
+import { copy } from '../copy';
 
 type CalendarProps = {
   months: MonthGrid[];
@@ -13,7 +14,6 @@ type CalendarProps = {
   onChange: (next: Set<string>) => void;
 };
 
-const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const LONG_PRESS_MS = 280;
 const MOVE_TOLERANCE_PX = 8;
 
@@ -21,7 +21,7 @@ const dateOf = (el: Element | null): string | null =>
   (el?.closest('[data-date]') as HTMLElement | null)?.dataset.date ?? null;
 
 function WeekdayRow({ weekStart }: { weekStart: number }) {
-  const days = [...WEEKDAYS.slice(weekStart), ...WEEKDAYS.slice(0, weekStart)];
+  const days = [...copy.calendar.weekdays.slice(weekStart), ...copy.calendar.weekdays.slice(0, weekStart)];
   return (
     <div class="dow-row" aria-hidden="true">
       {days.map((d, i) => (
@@ -145,7 +145,7 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
                 return (
                   <div key={c.iso} class={cls} data-date={c.iso}>
                     <span>{c.day}</span>
-                    <small>{n ? `${n}/${total}` : ''}</small>
+                    <small>{n ? copy.calendar.count(n, total) : ''}</small>
                   </div>
                 );
               })}
@@ -156,11 +156,11 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
       <div class="legend">
         <span>
           <span class="swatch mine" />
-          Your days
+          {copy.calendar.legendMine}
         </span>
         <span>
           <span class="swatch others" />
-          Others available
+          {copy.calendar.legendOthers}
         </span>
       </div>
     </div>

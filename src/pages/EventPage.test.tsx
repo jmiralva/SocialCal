@@ -42,7 +42,7 @@ describe('EventPage', () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
     expect(await screen.findByRole('dialog', { name: 'Fall camping trip' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Just look' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Just browse' }));
     expect(screen.getByText('Viewing only')).toBeTruthy();
     expect(screen.getByText('Created by')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Edit event' })).toBeNull();
@@ -99,7 +99,7 @@ describe('EventPage', () => {
   it('does not bring the name sheet back after help when just looking', async () => {
     vi.mocked(api.getEvent).mockResolvedValue(payload);
     render(<EventPage eventId={ID} navigate={vi.fn()} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Just look' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Just browse' }));
     fireEvent.click(screen.getByRole('button', { name: 'How socialcal works' }));
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -144,9 +144,9 @@ describe('EventPage', () => {
     const blocked = "Cookies are blocked, so this browser can't remember you.";
     expect(await screen.findByText(blocked)).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
-    // Once the toast times out, "Add my days" must say why nothing happens instead of doing nothing.
+    // Once the toast times out, "Add my availability" must say why nothing happens instead of doing nothing.
     await waitFor(() => expect(screen.queryByText(blocked)).toBeNull(), { timeout: 3000 });
-    fireEvent.click(screen.getByRole('button', { name: 'Add my days' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add my availability' }));
     expect(await screen.findByText(blocked)).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
