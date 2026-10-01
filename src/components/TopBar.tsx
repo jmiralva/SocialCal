@@ -31,12 +31,12 @@ export function TopBar({
           </button>
         )}
         {showNew && (
-          <button type="button" class="btn btn-new" onClick={onNew}>
+          <button type="button" class="btn btn-quiet" onClick={onNew}>
             {copy.topBar.new}
           </button>
         )}
         {onShare && (
-          <button type="button" class="btn btn-share" onClick={onShare}>
+          <button type="button" class="btn" onClick={onShare}>
             {copy.topBar.share}
           </button>
         )}

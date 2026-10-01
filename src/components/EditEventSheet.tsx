@@ -44,7 +44,7 @@ export function EditEventSheet({
         <EventFields form={form} errors={errors} onField={(key, value) => setForm((f) => ({ ...f, [key]: value }))} />
         {formError && <p class="form-error">{formError}</p>}
         <div class="sheet-actions">
-          <button type="button" class="btn btn-ghost" onClick={onClose}>
+          <button type="button" class="btn btn-quiet" onClick={onClose}>
             {copy.editEvent.cancel}
           </button>
           <button type="submit" class="btn" disabled={busy}>

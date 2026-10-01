@@ -15,9 +15,9 @@ describe('TopBar', () => {
     expect(onHelp).toHaveBeenCalledOnce();
   });
 
-  it('styles New and Share as the green pair', () => {
+  it('styles Share as primary and New as quiet', () => {
     render(<TopBar onNew={vi.fn()} onShare={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'New' }).className).toBe('btn btn-new');
-    expect(screen.getByRole('button', { name: 'Share' }).className).toBe('btn btn-share');
+    expect(screen.getByRole('button', { name: 'New' }).className).toBe('btn btn-quiet');
+    expect(screen.getByRole('button', { name: 'Share' }).className).toBe('btn');
   });
 });

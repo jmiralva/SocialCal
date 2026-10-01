@@ -27,7 +27,7 @@ export function BestDays({
       <div class="empty">
         <h3>{copy.best.aloneTitle}</h3>
         <p>{copy.best.aloneBody}</p>
-        <button type="button" class="btn btn-share" onClick={onShare}>
+        <button type="button" class="btn" onClick={onShare}>
           {copy.best.share}
         </button>
       </div>
@@ -47,7 +47,7 @@ export function BestDays({
               {copy.best.editDates}
             </button>
           ) : (
-            <button type="button" class="btn btn-share" onClick={onShare}>
+            <button type="button" class="btn" onClick={onShare}>
               {copy.best.share}
             </button>
           )}

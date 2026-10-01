@@ -19,14 +19,14 @@ const renderBest = (result: BestResult, isCreator = false) => {
 };
 
 describe('BestDays', () => {
-  it('styles the share buttons green', () => {
+  it('styles the share button as primary', () => {
     renderBest({ kind: 'not-enough-people' });
-    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn btn-share');
+    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn');
   });
 
-  it('styles the no-majority share button green for non-creators', () => {
+  it('styles the no-majority share button as primary for non-creators', () => {
     renderBest({ kind: 'no-majority', max: 1, total: 4, closest: [] });
-    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn btn-share');
+    expect(screen.getByRole('button', { name: 'Share the link' }).className).toBe('btn');
   });
 
   it('uses singular labels for one day each', () => {

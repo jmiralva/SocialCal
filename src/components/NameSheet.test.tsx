@@ -11,6 +11,26 @@ const props = () => ({
 });
 
 describe('NameSheet', () => {
+  it('marks the name field invalid when the name is missing', async () => {
+    render(<NameSheet {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    const input = screen.getByLabelText('Your name');
+    expect(await screen.findByText('Enter your name.')).toBeTruthy();
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.getAttribute('aria-describedby')).toBe('name-error');
+    expect(document.getElementById('name-error')!.textContent).toBe('Enter your name.');
+  });
+
+  it('does not mark a valid name invalid when the server call fails', async () => {
+    const onSubmit = vi.fn(async () => "Couldn't save. Try again.");
+    render(<NameSheet {...props()} onSubmit={onSubmit} initialName="Jorge" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(await screen.findByText("Couldn't save. Try again.")).toBeTruthy();
+    const input = screen.getByLabelText('Your name');
+    expect(input.getAttribute('aria-invalid')).toBeNull();
+    expect(input.getAttribute('aria-describedby')).toBe('name-error');
+  });
+
   it('has no How it works link without onHelp', () => {
     render(<NameSheet {...props()} />);
     expect(screen.queryByRole('button', { name: 'How it works' })).toBeNull();
