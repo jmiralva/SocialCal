@@ -5,3 +5,9 @@ dist/
 .dev.vars
 test-results/
 playwright-report/
+docs/
+.DS_Store
+.env*
+*.log
+coverage/
+.claude/settings.local.json

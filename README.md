@@ -2,8 +2,6 @@
 
 Find a day that works for a group. Create a calendar, share the link, and everyone marks the days they're free.
 
-Design: `docs/superpowers/specs/2026-09-30-socialcal-design.md`
-
 ## Develop
 
 ```bash
