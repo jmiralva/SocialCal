@@ -18,6 +18,7 @@ import { ReadySheet } from '../components/ReadySheet';
 import { EditEventSheet } from '../components/EditEventSheet';
 import { Toast } from '../components/Toast';
 import { NotFound } from './NotFound';
+import { weekStartForLocale } from '../lib/weekStart';
 
 const CANT_EDIT = "This browser can't edit this event. Use your private edit link.";
 const OFFLINE = "Couldn't save. Check your connection and try again.";
@@ -32,6 +33,8 @@ const pendingEditKey = (eventId: string): string | null => {
 
 const errorMessage = (e: unknown) =>
   e instanceof ApiRequestError && e.status >= 400 && e.status < 500 ? e.message : OFFLINE;
+
+const WEEK_START = weekStartForLocale();
 
 export function EventPage({ eventId, navigate }: { eventId: string; navigate: Navigate }) {
   const { state, refresh, retry, setData } = useEvent(eventId);
@@ -201,7 +204,8 @@ export function EventPage({ eventId, navigate }: { eventId: string; navigate: Na
           <section class="pane-all">
             <MarkingBar name={me?.name} count={myCount} onChangeName={() => setSheet('rename')} onAddDays={() => setViewOnly(false)} />
             <Calendar
-              months={monthGrids(event.startDate, event.endDate)}
+              months={monthGrids(event.startDate, event.endDate, WEEK_START)}
+              weekStart={WEEK_START}
               counts={countByDay(participants)}
               total={participants.length}
               mine={myDates}

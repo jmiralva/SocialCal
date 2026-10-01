@@ -9,6 +9,7 @@ type CalendarProps = {
   mine: ReadonlySet<string>;
   selectableDays: string[];
   editable: boolean;
+  weekStart?: number; // 0 = Sunday ... 6 = Saturday
   onChange: (next: Set<string>) => void;
 };
 
@@ -19,17 +20,18 @@ const MOVE_TOLERANCE_PX = 8;
 const dateOf = (el: Element | null): string | null =>
   (el?.closest('[data-date]') as HTMLElement | null)?.dataset.date ?? null;
 
-function WeekdayRow() {
+function WeekdayRow({ weekStart }: { weekStart: number }) {
+  const days = [...WEEKDAYS.slice(weekStart), ...WEEKDAYS.slice(0, weekStart)];
   return (
     <div class="dow-row" aria-hidden="true">
-      {WEEKDAYS.map((d, i) => (
+      {days.map((d, i) => (
         <span key={i}>{d}</span>
       ))}
     </div>
   );
 }
 
-export function Calendar({ months, counts, total, mine, selectableDays, editable, onChange }: CalendarProps) {
+export function Calendar({ months, counts, total, mine, selectableDays, editable, weekStart = 0, onChange }: CalendarProps) {
   const selectable = useMemo(() => new Set(selectableDays), [selectableDays]);
   const gridRef = useRef<HTMLDivElement>(null);
   const latest = useRef({ mine, selectable, selectableDays, onChange });
@@ -124,7 +126,7 @@ export function Calendar({ months, counts, total, mine, selectableDays, editable
         {months.map((month) => (
           <section class="month" key={month.key}>
             <h3>{month.label}</h3>
-            <WeekdayRow />
+            <WeekdayRow weekStart={weekStart} />
             <div class={`grid${editable ? '' : ' is-readonly'}`}>
               {month.cells.map((c, i) => {
                 if (!c) return <div key={`blank-${i}`} />;

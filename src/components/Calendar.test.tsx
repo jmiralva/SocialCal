@@ -4,11 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { Calendar } from './Calendar';
 import { monthGrids, rangeDays } from '../../shared/dates';
 
-function Harness({ initial = [], editable = true, onChange = () => {} }: { initial?: string[]; editable?: boolean; onChange?: (d: string[]) => void }) {
+function Harness({ initial = [], editable = true, weekStart, onChange = () => {} }: { initial?: string[]; editable?: boolean; weekStart?: number; onChange?: (d: string[]) => void }) {
   const [mine, setMine] = useState(new Set(initial));
   return (
     <Calendar
-      months={monthGrids('2026-10-07', '2026-10-20')}
+      months={monthGrids('2026-10-07', '2026-10-20', weekStart)}
+      weekStart={weekStart}
       counts={new Map([['2026-10-09', 2]])}
       total={3}
       mine={mine}
@@ -36,6 +37,13 @@ describe('Calendar', () => {
     // Each month: heading, then weekday row, then grid
     const month = container.querySelector('.month')!;
     expect([...month.children].map((el) => el.tagName === 'H3' ? 'h3' : el.className)).toEqual(['h3', 'dow-row', 'grid']);
+  });
+
+  it('starts the week on the given day', () => {
+    const { container } = render(<Harness weekStart={1} />);
+    expect(container.querySelector('.dow-row')!.textContent).toBe('MTWTFSS');
+    const grid = container.querySelector('.grid')!;
+    expect(grid.children[3].textContent).toBe('1'); // Oct 1 2026 is a Thursday
   });
 
   it('toggles a day on tap', () => {

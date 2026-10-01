@@ -35,7 +35,8 @@ export function formatDay(iso: string): string {
 export type MonthCell = { iso: string; day: number; inRange: boolean };
 export type MonthGrid = { key: string; label: string; cells: (MonthCell | null)[] };
 
-export function monthGrids(start: string, end: string): MonthGrid[] {
+// weekStart: 0 = Sunday ... 6 = Saturday (same numbering as getUTCDay)
+export function monthGrids(start: string, end: string, weekStart = 0): MonthGrid[] {
   const grids: MonthGrid[] = [];
   const startDate = new Date(toUTC(start));
   const endDate = new Date(toUTC(end));
@@ -44,7 +45,7 @@ export function monthGrids(start: string, end: string): MonthGrid[] {
   while (y < endDate.getUTCFullYear() || (y === endDate.getUTCFullYear() && m <= endDate.getUTCMonth())) {
     const first = new Date(Date.UTC(y, m, 1));
     const daysInMonth = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
-    const cells: (MonthCell | null)[] = Array(first.getUTCDay()).fill(null);
+    const cells: (MonthCell | null)[] = Array((first.getUTCDay() - weekStart + 7) % 7).fill(null);
     for (let day = 1; day <= daysInMonth; day++) {
       const iso = fromUTC(Date.UTC(y, m, day));
       cells.push({ iso, day, inRange: iso >= start && iso <= end });

@@ -38,4 +38,12 @@ describe('dates', () => {
     expect(nov.cells[0]).toEqual({ iso: '2026-11-01', day: 1, inRange: true }); // Nov 1 2026 is a Sunday
     expect(nov.cells.find((c) => c?.day === 15)?.inRange).toBe(false);
   });
+
+  it('offsets leading blanks by the week start', () => {
+    const blanks = (g: { cells: unknown[] }) => g.cells.findIndex(Boolean);
+    const [oct, nov] = monthGrids('2026-10-07', '2026-11-14', 1); // Monday
+    expect(blanks(oct)).toBe(3); // Thursday
+    expect(blanks(nov)).toBe(6); // Sunday lands in the last column
+    expect(blanks(monthGrids('2026-10-07', '2026-10-07', 6)[0])).toBe(5); // Saturday start
+  });
 });
