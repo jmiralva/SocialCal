@@ -16,6 +16,7 @@
   --hl-mark: #2443B8;
   --marker: #E0352B;
   --wash: 36, 67, 184;
+  --ink-bright: #3358E6;
   --wash-max: .26;
   --error: #B42318;
   --scrim: rgba(28, 35, 64, 0.38);
@@ -45,6 +46,7 @@
     --hl-mark: #161B33;
     --marker: #FF6A5E;
     --wash: 169, 184, 255;
+    --ink-bright: #C6D0FF;
     --wash-max: .16;
     --error: #FF8A80;
     --scrim: rgba(0, 0, 0, 0.55);
@@ -62,7 +64,6 @@ h1, h2, h3 { font-family: var(--font); font-variation-settings: var(--casual); f
 .btn-block { width: 100%; padding: 12px; }
 .linklike { background: none; border: 0; padding: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: inherit; }
 .linklike.block { display: block; margin: 12px auto 0; font-size: 13px; color: var(--ink); }
-.linklike:hover { color: var(--text); }
 
 .topbar { position: sticky; top: 0; z-index: 4; display: flex; justify-content: space-between; align-items: center; height: var(--topbar-h); padding: 0 max(16px, calc((100% - 1200px) / 2 + 16px)); background: var(--paper); border-bottom: 1px solid var(--rule); }
 .wordmark { font-family: var(--font); font-variation-settings: var(--casual); font-weight: 800; font-size: 18px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
@@ -74,7 +75,6 @@ h1, h2, h3 { font-family: var(--font); font-variation-settings: var(--casual); f
 .bm-loop { fill: none; stroke: var(--marker); stroke-width: 7.5; stroke-linecap: round; stroke-linejoin: round; }
 .topbar-actions { display: flex; gap: 8px; align-items: center; }
 .help-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
-.help-icon-btn:hover { color: var(--text); }
 
 .page { min-height: 100dvh; padding-bottom: 72px; }
 .layout { max-width: 1200px; margin: 0 auto; }
@@ -86,7 +86,6 @@ h1, h2, h3 { font-family: var(--font); font-variation-settings: var(--casual); f
 .byline b { color: var(--text); font-weight: 600; }
 .description { margin: 8px 0 0; font-size: 15px; color: var(--text); white-space: pre-line; overflow-wrap: anywhere; }
 .description a { color: var(--ink); text-underline-offset: 3px; }
-.description a:hover { color: var(--text); }
 
 .marking-bar { margin: 0 16px 6px; padding: 8px 10px; border-radius: 6px; background: var(--sheet); box-shadow: inset 0 0 0 1px var(--rule); font-size: 14px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .you { font-weight: 700; font-variation-settings: var(--casual); color: var(--on-hl); background: var(--hl); box-shadow: inset 0 -2px 0 var(--hl-edge); padding: 0 3px; border-radius: 2px; }
@@ -167,6 +166,27 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: var(--sheet); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom); z-index: 5; }
 .tabbar button { flex: 1; border: 0; background: none; padding: 12px 0 14px; font-weight: 700; font-size: 13px; color: var(--muted); cursor: pointer; }
 .tabbar button[aria-selected='true'] { color: var(--ink); box-shadow: inset 0 2.5px 0 var(--ink); }
+
+/* Hover leans on the highlighter: links get a yellow stroke swiped behind them, buttons lift onto a yellow edge. Hover-capable pointers only, so taps don't leave it stuck. */
+:is(.description a, .help-about a, .linklike, .help-link) {
+  background-image: linear-gradient(var(--hl), var(--hl)); background-repeat: no-repeat; background-size: 0% 100%;
+  border-radius: 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: background-size .18s ease-out, color .18s;
+}
+:is(.btn, .more, .help-icon-btn) { transition: background-color .12s, box-shadow .12s, transform .12s, color .12s; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.description a, .help-about a, .linklike, .help-link, .btn, .more, .help-icon-btn) { transition: none; }
+}
+@media (hover: hover) {
+  :is(.description a, .help-about a, .linklike, .help-link):hover { background-size: 100% 100%; color: var(--on-hl); text-decoration-color: var(--hl-edge); }
+  .help-icon-btn:hover { background: var(--hl); color: var(--on-hl); transform: rotate(-8deg); }
+  .btn:not(.btn-quiet):not(:disabled):hover { background: var(--ink-bright); transform: translateY(-2px); box-shadow: inset 0 -4px 0 var(--hl), 0 3px 0 rgba(var(--wash), .35); }
+  .btn:not(.btn-quiet):not(:disabled):active { transform: translateY(0); box-shadow: inset 0 -3px 0 var(--hl); }
+  .btn-quiet:not(:disabled):hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1.5px var(--ink), inset 0 -4px 0 var(--hl), 0 3px 0 rgba(var(--wash), .35); }
+  .btn-quiet:not(:disabled):active { transform: translateY(0); box-shadow: inset 0 0 0 1.5px var(--ink), inset 0 -3px 0 var(--hl); }
+  .more:hover { box-shadow: inset 0 -4px 0 var(--hl); }
+  .tabbar button[aria-selected='false']:hover { color: var(--text); }
+}
 /* Keyboard focus only, and not on text fields, which draw their own inset ring (.field input:focus). data-input (src/lib/inputModality.ts) covers Safari, which hides :focus-visible when arrow keys move focus after a click. */
 :where(button, a[href], [tabindex]):focus-visible,
 :where(html[data-input='keyboard']) :where(button, a[href], [tabindex]):focus { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -212,8 +232,7 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
 .copy-row code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font); font-variation-settings: var(--mono); font-size: 13px; color: var(--text); }
 .copy-help { font-size: 13px; color: var(--muted); margin: 0; }
 
-.help-link { display: flex; width: fit-content; align-items: center; gap: 6px; min-height: 24px; padding: 0; border: 0; background: none; color: var(--ink); font-size: 14px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.help-link:hover { color: var(--text); }
+.help-link { display: flex; width: fit-content; align-items: center; gap: 6px; min-height: 24px; padding: 0; border: 0; background-color: transparent; color: var(--ink); font-size: 14px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .sheet .help-link { margin: -8px 0 14px; }
 .help-h { font-size: 16px; margin: 16px 0 6px; }
 .help-list { margin: 0; padding-left: 18px; font-size: 14px; color: var(--text); }
@@ -221,7 +240,6 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
 .help-list b { color: var(--text); }
 .help-about { margin: 0; font-size: 14px; color: var(--text); }
 .help-about a { color: var(--ink); text-underline-offset: 3px; }
-.help-about a:hover { color: var(--text); }
 
 .create { max-width: 480px; margin: 12px auto 40px; padding: 0 16px; }
 .create h1 { font-size: 32px; margin-bottom: 4px; }
