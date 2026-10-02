@@ -62,6 +62,7 @@ h1, h2, h3 { font-family: var(--font); font-variation-settings: var(--casual); f
 .btn-block { width: 100%; padding: 12px; }
 .linklike { background: none; border: 0; padding: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: inherit; }
 .linklike.block { display: block; margin: 12px auto 0; font-size: 13px; color: var(--ink); }
+.linklike:hover { color: var(--text); }
 
 .topbar { position: sticky; top: 0; z-index: 4; display: flex; justify-content: space-between; align-items: center; height: var(--topbar-h); padding: 0 max(16px, calc((100% - 1200px) / 2 + 16px)); background: var(--paper); border-bottom: 1px solid var(--rule); }
 .wordmark { font-family: var(--font); font-variation-settings: var(--casual); font-weight: 800; font-size: 18px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
@@ -85,6 +86,7 @@ h1, h2, h3 { font-family: var(--font); font-variation-settings: var(--casual); f
 .byline b { color: var(--text); font-weight: 600; }
 .description { margin: 8px 0 0; font-size: 15px; color: var(--text); white-space: pre-line; overflow-wrap: anywhere; }
 .description a { color: var(--ink); text-underline-offset: 3px; }
+.description a:hover { color: var(--text); }
 
 .marking-bar { margin: 0 16px 6px; padding: 8px 10px; border-radius: 6px; background: var(--sheet); box-shadow: inset 0 0 0 1px var(--rule); font-size: 14px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .you { font-weight: 700; font-variation-settings: var(--casual); color: var(--on-hl); background: var(--hl); box-shadow: inset 0 -2px 0 var(--hl-edge); padding: 0 3px; border-radius: 2px; }
@@ -219,6 +221,7 @@ button.day { border: 0; margin: 0; padding: 0; width: 100%; font-family: inherit
 .help-list b { color: var(--text); }
 .help-about { margin: 0; font-size: 14px; color: var(--text); }
 .help-about a { color: var(--ink); text-underline-offset: 3px; }
+.help-about a:hover { color: var(--text); }
 
 .create { max-width: 480px; margin: 12px auto 40px; padding: 0 16px; }
 .create h1 { font-size: 32px; margin-bottom: 4px; }
