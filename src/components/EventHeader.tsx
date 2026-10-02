@@ -1,5 +1,6 @@
 import type { EventInfo } from '../../shared/types';
 import { copy } from '../copy';
+import { linkify } from '../lib/linkify';
 
 export function EventHeader({ event, isCreator, onEdit }: { event: EventInfo; isCreator: boolean; onEdit: () => void }) {
   return (
@@ -16,7 +17,19 @@ export function EventHeader({ event, isCreator, onEdit }: { event: EventInfo; is
           </>
         )}
       </p>
-      {event.description && <p class="description">{event.description}</p>}
+      {event.description && (
+        <p class="description">
+          {linkify(event.description).map((part) =>
+            part.type === 'link' ? (
+              <a href={part.value} target="_blank" rel="noopener noreferrer">
+                {part.value}
+              </a>
+            ) : (
+              part.value
+            ),
+          )}
+        </p>
+      )}
     </div>
   );
 }
